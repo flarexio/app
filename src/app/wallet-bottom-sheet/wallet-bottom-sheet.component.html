@@ -1,0 +1,9 @@
+<mat-nav-list>
+@for (wallet of wallets; track wallet) {
+  <mat-list-item (click)="connectWallet(wallet)">
+    <img matListItemIcon [src]="wallet.icon">
+    <span matListItemTitle>{{ wallet.name }}</span>
+    <span matListItemLine>{{ wallet.readyState }}</span>
+  </mat-list-item>
+}
+</mat-nav-list>

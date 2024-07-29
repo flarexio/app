@@ -1,0 +1,14 @@
+@use '@angular/material' as mat;
+
+#toolbar {
+  @include mat.elevation(6, 'red');
+}
+
+#menu-sidenav {
+  width: 300px;
+  padding: 10px 10px 10px 10px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
