@@ -49,7 +49,7 @@ export class SolanaService {
       getFavoriteDomain(this.connection, pubkey),
     ).pipe(
       map(({ reverse }) => reverse + ".sol"),
-      catchError(() => of(pubkey.toBase58().slice(0, 10) + '...')),
+      catchError(() => of(pubkey.toBase58())),
     );
   }
 

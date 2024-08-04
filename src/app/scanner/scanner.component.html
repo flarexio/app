@@ -1,0 +1,22 @@
+<div class="scanner">
+  <mat-card appearance="outlined">
+    <mat-form-field>
+      <mat-select [(value)]="currentDevice">
+      @for (device of availableDevices; track device) {
+        <mat-option [value]="device">{{ device.label }}</mat-option>
+      }
+      </mat-select>
+    </mat-form-field>
+    <mat-card-content>
+      <zxing-scanner
+        [formats]="allowedFormats"
+        [(device)]="currentDevice"
+        (camerasFound)="camerasFoundHandler($event)" 
+        (scanSuccess)="scanSuccessHandler($event)" 
+      ></zxing-scanner>
+    </mat-card-content>
+    <mat-card-footer>
+      {{ result }}
+    </mat-card-footer>
+  </mat-card>
+</div>

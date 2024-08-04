@@ -1,6 +1,6 @@
-import { AsyncPipe, CurrencyPipe } from '@angular/common'
-import { Component, HostListener } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { AsyncPipe, CurrencyPipe, SlicePipe } from '@angular/common'
+import { Component, HostListener, ViewChild } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { Observable, concatAll, map, share } from 'rxjs';
 
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -27,6 +27,7 @@ import { WalletBottomSheetComponent } from './wallet-bottom-sheet/wallet-bottom-
   imports: [
     AsyncPipe,
     CurrencyPipe,
+    SlicePipe,
     RouterOutlet,
     MatBottomSheetModule,
     MatButtonModule,
@@ -52,10 +53,13 @@ export class AppComponent {
   getAccount: Observable<string | undefined>;
   getBalance: Observable<number | undefined>;
 
+  @ViewChild(MatDrawer) drawer: MatDrawer | undefined;
+
   constructor(
     private bottomSheet: MatBottomSheet,
     private solService: SolanaService,
     private walletService: WalletService,
+    private router: Router,
   ) {
     this.solService.connectionChange.subscribe({
       next: () => {
@@ -107,6 +111,22 @@ export class AppComponent {
 
     this.currentWallet.disconnect();
     this.currentWallet = undefined;
+  }
+
+  switchRouter(path: string) {
+    this.router.navigateByUrl(path);
+
+    if (this.width < 1024) {
+      this.drawer?.close();
+    }
+  }
+
+  isDomain(account: string): boolean {
+    if ((account == undefined) || (account == null)) {
+      return false;
+    }
+
+    return account.endsWith(".sol");
   }
 
   public get selectedNetwork(): WalletAdapterNetwork {
