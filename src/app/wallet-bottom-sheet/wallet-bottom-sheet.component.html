@@ -3,7 +3,11 @@
   <mat-list-item (click)="connectWallet(wallet)">
     <img matListItemIcon [src]="wallet.icon">
     <span matListItemTitle>{{ wallet.name }}</span>
-    <span matListItemLine>{{ wallet.readyState }}</span>
+    @if (defaultWallet == wallet.name) {
+      <mat-chip matListItemMeta>Auto</mat-chip>
+    } @else {
+      <span matListItemLine>{{ wallet.readyState }}</span>
+    }
   </mat-list-item>
 }
 </mat-nav-list>

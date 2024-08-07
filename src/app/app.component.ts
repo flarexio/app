@@ -44,7 +44,6 @@ import { WalletBottomSheetComponent } from './wallet-bottom-sheet/wallet-bottom-
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'FlareX';
   width = window.innerWidth;
 
   networks = Object.entries(WalletAdapterNetwork)
@@ -90,6 +89,11 @@ export class AppComponent {
       concatAll(),
       share(),
     );
+
+    const defaultWallet = localStorage.getItem("default_wallet");
+    if (defaultWallet != null && defaultWallet != '') {
+      this.walletService.autoConnect(defaultWallet);
+    }
   }
 
   @HostListener('window:resize', ['$event'])
@@ -101,16 +105,23 @@ export class AppComponent {
     this.bottomSheet
       .open(WalletBottomSheetComponent)
       .afterDismissed()
-      .subscribe((wallet) => 
-        this.currentWallet = wallet
-      );
+      .subscribe((wallet: BaseMessageSignerWalletAdapter) => {
+        if (wallet == undefined) return;
+        this.currentWallet = wallet;
+
+        localStorage.setItem('default_wallet', wallet.name);
+      });
   }
 
   disconnect() {
     if (this.currentWallet == undefined) return;
 
-    this.currentWallet.disconnect();
+    this.currentWallet.disconnect()
+                      .catch((err) => console.error(err));
+
     this.currentWallet = undefined;
+
+    localStorage.removeItem('default_wallet');
   }
 
   switchRouter(path: string) {

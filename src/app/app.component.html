@@ -3,7 +3,7 @@
               [mode]="(width >= 1024) ? 'side' : 'over'"
               [opened]="(width >= 1024)">
     <mat-nav-list>
-      <mat-list-item>
+      <mat-list-item (click)="switchRouter('/edges')">
         <mat-icon matListItemIcon>devices</mat-icon>
         <div matListItemTitle>Edge Devices</div>
       </mat-list-item>
@@ -22,7 +22,7 @@
       </button>
     }
 
-      <a (click)="switchRouter('/')">{{ title }}</a>
+      <a (click)="switchRouter('/')">Flare<span class="span-title">X</span></a>
       <div class="spacer"></div>
 
     @if (currentWallet == undefined) {
@@ -32,7 +32,7 @@
       </button>
     } @else {
       @if (getAccount | async; as account) {
-        <button mat-stroked-button [matMenuTriggerFor]="menu" 
+        <button mat-mini-fab [matMenuTriggerFor]="menu" 
                 matTooltip="{{ account }}">
           @if (isDomain(account)) {
             {{ account | slice: 0: -4 }}

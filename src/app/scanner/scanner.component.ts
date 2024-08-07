@@ -10,9 +10,9 @@ import { BaseMessageSignerWalletAdapter } from '@solana/wallet-adapter-base';
 import { BarcodeFormat } from '@zxing/library';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
-import { Prefix } from 'nkeys.js';
-import { Codec } from 'nkeys.js/lib/codec';
-import { base32 } from 'nkeys.js/lib/base32';
+import { Prefix } from '@nats-io/nkeys';
+import { Codec } from '@nats-io/nkeys/lib/codec';
+import { base32 } from '@nats-io/nkeys/lib/base32';
 import { Algorithms, Base64UrlCodec, Types, User, randomID } from 'nats-jwt';
 import * as jwt from 'nats-jwt';
 
@@ -127,7 +127,7 @@ export class ScannerComponent {
     const encoder = new TextEncoder();
     const data = encoder.encode(JSON.stringify(claims));
     if (globalThis.crypto && globalThis.crypto.subtle) {
-      const hash = await globalThis.crypto.subtle.digest("SHA-256", data);
+      const hash = await globalThis.crypto.subtle.digest('SHA-256', data);
       const encoded = base32.encode(new Uint8Array(hash));
       claims.jti = decoder.decode(encoded);
     } else {
@@ -135,7 +135,7 @@ export class ScannerComponent {
     }
 
     const h = {
-      typ: "JWT",
+      typ: 'JWT',
       alg: Algorithms.v2,
     };
 
