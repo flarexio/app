@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { concatAll, from, map } from 'rxjs';
+import { concatMap } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,11 +12,10 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
 import { Prefix } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
-import { base32 } from '@nats-io/nkeys/lib/base32';
-import { Algorithms, Base64UrlCodec, Types, User, randomID } from 'nats-jwt';
-import * as jwt from 'nats-jwt';
+import { Base64UrlCodec } from 'nats-jwt';
 
 import { FlarexService } from '../flarex.service';
+import { NatsService } from '../nats.service';
 import { WalletService } from '../wallet.service';
 
 @Component({
@@ -41,6 +40,7 @@ export class ScannerComponent {
   
   constructor(
     private flarexService: FlarexService,
+    private natsService: NatsService,
     private walletService: WalletService,
   ) { }
 
@@ -64,20 +64,24 @@ export class ScannerComponent {
 
     switch (req.type) {
       case 'req_user_token':
-        from(
-          this.signNATSUserJWT(req.id, req.pubkey, pubkey.toBase58())
-        ).pipe(
-          map(async (payload) => {
-            const encoder = new TextEncoder();
-            const tokenBytes = encoder.encode(payload);
+        const userPubkey = Codec.encode(Prefix.User, req.publicKey.toBytes());
+        const accountPubkey = Codec.encode(Prefix.Account, pubkey.toBytes());
+        const decoder = new TextDecoder();
 
-            const sigBytes = await this.currentWallet?.signMessage(tokenBytes);
-            if (sigBytes == undefined) return "";
+        this.natsService.generateUserJWT(req.id, 
+          decoder.decode(userPubkey),
+          decoder.decode(accountPubkey),
+        ).pipe(
+          concatMap(async (token) => {
+            const encoder = new TextEncoder();
+            const tokenBytes = encoder.encode(token);
+
+            const sigBytes = await currentWallet.signMessage(tokenBytes);
+            if (sigBytes == undefined) return "invalid sigurature";
 
             const sig = Base64UrlCodec.encode(sigBytes);
-            return `${payload}.${sig}`;
+            return `${token}.${sig}`;
           }),
-          concatAll(),
         ).subscribe({
           next: (token) => this.verifyNATSUserToken(token, req),
           error: (err) => console.error(err),
@@ -94,55 +98,6 @@ export class ScannerComponent {
       error: (err) => console.error(err),
       complete: () => console.log('complete'),
     });
-  }
-
-  async signNATSUserJWT(id: string, user: string, account: string): Promise<string> {
-    const accountPubkey = Codec.encode(
-      Prefix.Account, 
-      new PublicKey(account).toBytes(),
-    );
-
-    const userPubkey = Codec.encode(
-      Prefix.User, 
-      new PublicKey(user).toBytes(),
-    );
-
-    const decoder = new TextDecoder();
-    const claims: jwt.ClaimsData<User> = {
-      name: id,
-      aud: 'NATS',
-      jti: '',
-      iat: Math.floor(Date.now() / 1000),
-      iss: decoder.decode(accountPubkey),
-      sub: decoder.decode(userPubkey),
-      nats: {
-        subs: -1,
-        data: -1,
-        payload: -1,
-        type: Types.User,
-        version: 2,
-      },
-    };
-
-    const encoder = new TextEncoder();
-    const data = encoder.encode(JSON.stringify(claims));
-    if (globalThis.crypto && globalThis.crypto.subtle) {
-      const hash = await globalThis.crypto.subtle.digest('SHA-256', data);
-      const encoded = base32.encode(new Uint8Array(hash));
-      claims.jti = decoder.decode(encoded);
-    } else {
-      claims.jti = randomID();
-    }
-
-    const h = {
-      typ: 'JWT',
-      alg: Algorithms.v2,
-    };
-
-    const header = Base64UrlCodec.encode(JSON.stringify(h));
-    const payload = Base64UrlCodec.encode(JSON.stringify(claims));
-
-    return `${header}.${payload}`;
   }
 
   public get currentWallet(): BaseMessageSignerWalletAdapter | undefined {
@@ -166,5 +121,9 @@ class UserTokenRequest {
     }
 
     return true;
+  }
+
+  get publicKey(): PublicKey {
+    return new PublicKey(this.pubkey);
   }
 }

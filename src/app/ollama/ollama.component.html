@@ -15,11 +15,27 @@
 } @else {
   <mat-card class="edge-card" appearance="outlined">
     <mat-card-header>
-      NATS Connected
+      Ollama Chat (Version: {{ ver | async }})
     </mat-card-header>
+    <mat-card-content>
+      <pre style="white-space: pre-wrap;">{{ chats | async }}</pre>
+    </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-button (click)="signUserJWT()">Refresh Token</button>
+      <mat-form-field class="msg-form-field">
+        <mat-label>Message</mat-label>
+        <input #msg matInput type="text" (keyup.enter)="sendMsg(msg)">
+      @if (msg.value) {
+        <button matSuffix mat-icon-button (click)="sendMsg(msg)">
+          <mat-icon>send</mat-icon>
+        </button>
+      }
+      </mat-form-field>
     </mat-card-actions>
+    <mat-card-footer>
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    </mat-card-footer>
   </mat-card>
 }
 </div>

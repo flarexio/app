@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 
 import { Msg, NatsConnection, StringCodec, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
+import { base32 } from '@nats-io/nkeys/lib/base32';
+import { Algorithms, Base64UrlCodec, Types, User, randomID } from 'nats-jwt';
+import * as jwt from 'nats-jwt';
 
 import { environment as env } from '../environments/environment';
 
@@ -52,6 +55,50 @@ export class NatsService {
     if (nc == undefined) return of(undefined);
 
     return from(nc.subscribe(subject));
+  }
+
+  private async _generateUserJWT(id: string, user: string, account: string): Promise<string> {
+    const claims: jwt.ClaimsData<User> = {
+      name: id,
+      aud: 'NATS',
+      jti: '',
+      iat: Math.floor(Date.now() / 1000),
+      iss: account,
+      sub: user,
+      nats: {
+        subs: -1,
+        data: -1,
+        payload: -1,
+        type: Types.User,
+        version: 2,
+      },
+    };
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const data = encoder.encode(JSON.stringify(claims));
+    if (globalThis.crypto && globalThis.crypto.subtle) {
+      const hash = await globalThis.crypto.subtle.digest('SHA-256', data);
+      const encoded = base32.encode(new Uint8Array(hash));
+      claims.jti = decoder.decode(encoded);
+    } else {
+      claims.jti = randomID();
+    }
+
+    const h = {
+      typ: 'JWT',
+      alg: Algorithms.v2,
+    };
+
+    const header = Base64UrlCodec.encode(JSON.stringify(h));
+    const payload = Base64UrlCodec.encode(JSON.stringify(claims));
+
+    return `${header}.${payload}`;
+  }
+
+  public generateUserJWT(id: string, user: string, account: string): Observable<string> {
+    return from(this._generateUserJWT(id, user, account));
   }
 
   public set nc(value: NatsConnection | undefined) {
