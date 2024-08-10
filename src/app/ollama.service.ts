@@ -19,7 +19,27 @@ export class OllamaService {
     if (nc == undefined) return of(undefined);
 
     return from(nc.request('ollama.version', Empty, { timeout: 5000 })).pipe(
-      map((msg) => msg.string()),
+      map((msg) => msg.string())
+    )
+  }
+
+  listModels(): Observable<Model[] | undefined> {
+    const nc = this.natsService.nc;
+    if (nc == undefined) return of(undefined);
+
+    return from(
+      nc.request('ollama.models', Empty, { timeout: 5000 })
+    ).pipe(
+      map((msg) => {
+        const raw = JSON.parse(msg.string());
+        const models: Model[] = new Array();
+        for (const rawModel of raw.models) {
+          const model = Object.assign(new Model(), rawModel as Model);
+          models.push(model);
+        }
+
+        return models;
+      })
     )
   }
 
@@ -40,7 +60,7 @@ export class OllamaService {
     return from(
       nc.request('ollama.chats', payload, { timeout: 5000 })
     ).pipe(
-      map((msg) => msg.string()),
+      map((msg) => msg.string())
     )
   }
 
@@ -52,7 +72,8 @@ export class OllamaService {
       nc.subscribe('ollama.chats.>')
     ).pipe(
       map((msg) => {
-        const resp = Object.assign(new ChatResponse(), JSON.parse(msg.string()) as ChatResponse);
+        const raw = JSON.parse(msg.string()) as ChatResponse;
+        const resp = Object.assign(new ChatResponse(), raw);
 
         if (resp.done) {
           loading(false);
@@ -66,20 +87,60 @@ export class OllamaService {
   }
 }
 
-class ChatResponse {
-	private _model: string;
-	private _created_at: Date;
-	private _message: Message;
-	private _done_reason: string;
-	private _done: boolean;
+export class Model {
+	private _name: string = '';
+	private _model: string = '';
+	private _modified_at: Date = new Date();
+	private _size: number = 0;
+	private _digest: string = '';
 
-  constructor() {
-    this._model = '';
-    this._created_at = new Date();
-    this._message = new Message();
-    this._done_reason = '';
-    this._done = false;
+  public get name(): string {
+    return this._name;
   }
+
+  public set name(value: string) {
+    this._name = value;
+  }
+
+  public get model(): string {
+    return this._model;
+  }
+
+  public set model(value: string) {
+    this._model = value;
+  }
+
+  public set modified_at(value: Date) {
+    this._modified_at = value;
+  }
+
+  public get modified_at(): Date {
+    return this._modified_at;
+  }
+
+  public get size(): number {
+    return this._size;
+  }
+
+  public set size(value: number) {
+    this._size = value;
+  }
+
+  public get digest(): string {
+    return this._digest;
+  }
+
+  public set digest(value: string) {
+    this._digest = value;
+  }
+}
+
+class ChatResponse {
+	private _model: string = '';
+	private _created_at: Date = new Date;
+	private _message: Message = new Message;
+	private _done_reason: string = '';
+	private _done: boolean = false;
 
   public get model(): string {
     return this._model;
@@ -122,14 +183,10 @@ class ChatResponse {
   }
 }
 
-class Message {
-	private _role: string;
-	private _content: string;
 
-  constructor() {
-    this._role = '';
-    this._content = '';
-  }
+class Message {
+	private _role: string = '';
+	private _content: string = '';
 
   public get role(): string {
     return this._role;

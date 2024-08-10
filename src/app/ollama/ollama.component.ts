@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { Observable, concatMap, from, map, mergeMap, of, scan } from 'rxjs';
+import { Observable, concatMap, from, mergeMap } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,13 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
 
 import { Prefix, createUser } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
 import { Base64UrlCodec } from 'nats-jwt';
 
 import { NatsService } from '../nats.service';
-import { OllamaService } from '../ollama.service';
+import { OllamaService, Model } from '../ollama.service';
 import { WalletService } from '../wallet.service';
 
 @Component({
@@ -28,13 +29,17 @@ import { WalletService } from '../wallet.service';
     MatIconModule,
     MatInputModule,
     MatProgressBarModule,
+    MatSelectModule,
   ],
   templateUrl: './ollama.component.html',
   styleUrl: './ollama.component.scss'
 })
 export class OllamaComponent {
   ver: Observable<string | undefined>;
+  models: Observable<Model[] | undefined>;
   chats: Observable<string | undefined>;
+
+  selectedModel: Model | undefined;
   result: string | undefined;
 
   private _loading: boolean = false;
@@ -46,6 +51,10 @@ export class OllamaComponent {
   ) {
     this.ver = this.natsService.connectionChange.pipe(
       mergeMap((_) => this.ollamaService.getVersion())
+    );
+
+    this.models = this.natsService.connectionChange.pipe(
+      mergeMap((_) => this.ollamaService.listModels())
     );
 
     this.chats = this.natsService.connectionChange.pipe(
@@ -102,10 +111,13 @@ export class OllamaComponent {
     const nc = this.natsService.nc;
     if (nc == undefined) return;
 
+    const model = this.selectedModel;
+    if (model == undefined) return;
+
     this.loading = true;
 
     this.ollamaService.chat(
-      'llama3.1', msg
+      model.model, msg
     ).subscribe({
       next: (result) => this.result = result,
       error: (err) => console.error(err),
