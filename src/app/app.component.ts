@@ -90,10 +90,10 @@ export class AppComponent {
       share(),
     );
 
-    const defaultWallet = localStorage.getItem("default_wallet");
-    if (defaultWallet != null && defaultWallet != '') {
-      this.walletService.autoConnect(defaultWallet);
-    }
+    // const defaultWallet = localStorage.getItem("default_wallet");
+    // if (defaultWallet != null && defaultWallet != '') {
+    //   this.walletService.autoConnect(defaultWallet);
+    // }
   }
 
   @HostListener('window:resize', ['$event'])

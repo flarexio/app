@@ -15,10 +15,10 @@
 } @else {
   <mat-card class="edge-card" appearance="outlined">
     <mat-card-header>
-      <mat-card-title>Chats</mat-card-title>
+      Ollama Chat (Version: {{ ver | async }})
     </mat-card-header>
     <mat-card-content>
-      <pre>{{ chatsSubscription | async }}</pre>
+      <pre style="white-space: pre-wrap;">{{ chats | async }}</pre>
     </mat-card-content>
     <mat-card-actions align="end">
       <mat-form-field class="msg-form-field">
@@ -31,6 +31,11 @@
       }
       </mat-form-field>
     </mat-card-actions>
+    <mat-card-footer>
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    </mat-card-footer>
   </mat-card>
 }
 </div>
