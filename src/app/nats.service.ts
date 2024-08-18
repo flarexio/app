@@ -57,9 +57,9 @@ export class NatsService {
     return from(nc.subscribe(subject));
   }
 
-  private async _generateUserJWT(id: string, user: string, account: string): Promise<string> {
+  private async _generateUserJWT(name: string, user: string, account: string): Promise<string> {
     const claims: jwt.ClaimsData<User> = {
-      name: id,
+      name: name,
       aud: 'NATS',
       jti: '',
       iat: Math.floor(Date.now() / 1000),
@@ -97,8 +97,8 @@ export class NatsService {
     return `${header}.${payload}`;
   }
 
-  public generateUserJWT(id: string, user: string, account: string): Observable<string> {
-    return from(this._generateUserJWT(id, user, account));
+  public generateUserJWT(name: string, user: string, account: string): Observable<string> {
+    return from(this._generateUserJWT(name, user, account));
   }
 
   public set nc(value: NatsConnection | undefined) {

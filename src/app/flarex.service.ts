@@ -14,10 +14,10 @@ export class FlarexService {
     private http: HttpClient,
   ) { }
 
-  verifyNATSUserToken(code: string, id: string, token: string): Observable<string> {
-    const params = { code, id, token };
+  verifyToken(code: string, user: string, token: string): Observable<string> {
+    const params = { code, user, token };
 
-    return this.http.patch(`${this.baseURL}/nats/user/token`, params).pipe(
+    return this.http.post(`${this.baseURL}/sessions/verify`, params).pipe(
       map((result) => result as string)
     )
   }

@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { Observable, concatMap, from, mergeMap } from 'rxjs';
+import { Observable, concatMap, from, mergeMap, scan } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -37,10 +37,11 @@ import { WalletService } from '../wallet.service';
 export class OllamaComponent {
   ver: Observable<string | undefined>;
   models: Observable<Model[] | undefined>;
-  chats: Observable<string | undefined>;
 
   selectedModel: Model | undefined;
-  result: string | undefined;
+
+  question: string | undefined;
+  answer: string | undefined;
 
   private _loading: boolean = false;
 
@@ -55,10 +56,6 @@ export class OllamaComponent {
 
     this.models = this.natsService.connectionChange.pipe(
       mergeMap((_) => this.ollamaService.listModels())
-    );
-
-    this.chats = this.natsService.connectionChange.pipe(
-      mergeMap((_) => this.ollamaService.subChats(value => this.loading = value))
     );
   }
 
@@ -116,12 +113,16 @@ export class OllamaComponent {
 
     this.loading = true;
 
+    this.question = msg;
+
     this.ollamaService.chat(
       model.model, msg
+    ).pipe(
+      scan((acc, curr) => acc + curr, '')
     ).subscribe({
-      next: (result) => this.result = result,
+      next: result => this.answer = result,
       error: (err) => console.error(err),
-      complete: () => console.log('complete'),
+      complete: () => this.loading = false,
     });
   }
 

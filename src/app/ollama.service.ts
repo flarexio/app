@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map, of, scan } from 'rxjs';
+import { BehaviorSubject, Observable, from, map, of, scan } from 'rxjs';
 
-import { Empty } from '@nats-io/nats-core';
+import { Empty, createInbox } from '@nats-io/nats-core';
 
 import { NatsService } from './nats.service';
 
@@ -43,9 +43,9 @@ export class OllamaService {
     )
   }
 
-  chat(model: string, content: string): Observable<string | undefined> {
+  chat(model: string, content: string): Observable<string> {
     const nc = this.natsService.nc;
-    if (nc == undefined) return of(undefined);
+    if (nc == undefined) return of('');
 
     const req = {
       model,
@@ -55,13 +55,37 @@ export class OllamaService {
       stream: true,
     };
 
-    const payload = JSON.stringify(req);
+    const subject = new BehaviorSubject<string>('');
 
-    return from(
-      nc.request('ollama.chats', payload, { timeout: 5000 })
-    ).pipe(
-      map((msg) => msg.string())
-    )
+    const inbox = createInbox();
+
+    const sub = nc.subscribe(inbox, {
+      callback: (err, msg) => {
+        if (err != null) {
+          subject.error(err);
+          subject.complete();
+          return;
+        }
+
+        const raw = JSON.parse(msg.string()) as ChatResponse;
+        const resp = Object.assign(new ChatResponse(), raw);
+
+        if (resp.done) {
+          subject.next('\n');
+
+          sub.unsubscribe();
+          subject.complete();
+          return;
+        }
+
+        subject.next(resp.message.content);
+      }
+    });
+
+    const payload = JSON.stringify(req);
+    nc.publish('ollama.chat', payload, { reply: inbox })
+
+    return subject.asObservable();
   }
 
   subChats(loading: (value: boolean) => void): Observable<string | undefined> {
@@ -182,7 +206,6 @@ class ChatResponse {
     this._done = value;
   }
 }
-
 
 class Message {
 	private _role: string = '';

@@ -1,7 +1,7 @@
-<div class="edge-connected">
+<div class="ollama-container">
 
 @if (!isNatsConnected) {
-  <mat-card class="edge-card" appearance="outlined">
+  <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>No Connected</mat-card-title>
     </mat-card-header>
@@ -14,33 +14,47 @@
   </mat-card>
 } @else {
   <p>Ollama Chat (Version: {{ ver | async }})</p>
-  <mat-card class="edge-card" appearance="outlined">
-    <mat-form-field>
-      <mat-select [(value)]="selectedModel">
-      @for (model of models | async; track model) {
-        <mat-option [value]="model">{{ model.name }}</mat-option>
-      }
-      </mat-select>
-    </mat-form-field>
-    <mat-card-content>
-      <pre style="white-space: pre-wrap;">{{ chats | async }}</pre>
+  <mat-form-field appearance="outline">
+    <mat-label>Select Model</mat-label>
+    <mat-select [(value)]="selectedModel">
+    @for (model of models | async; track model) {
+      <mat-option [value]="model">{{ model.name }}</mat-option>
+    }
+    </mat-select>
+  </mat-form-field>
+
+<!-- TODO: Generate Chat Component -->
+@if (question != undefined) {
+  <mat-card appearance="outlined">
+    <mat-card-content class="chat-container">
+      <div class="chat-message right">
+        <pre class="question">{{ question }}</pre>
+      </div>
+
+    @if (answer != undefined) {
+      <div class="chat-message left">
+        <pre class="answer">{{ answer }}</pre>
+      </div>
+    }
     </mat-card-content>
-    <mat-card-actions align="end">
-      <mat-form-field class="msg-form-field">
-        <mat-label>Message</mat-label>
-        <input #msg matInput type="text" (keyup.enter)="sendMsg(msg)">
-      @if (msg.value) {
-        <button matSuffix mat-icon-button (click)="sendMsg(msg)">
-          <mat-icon>send</mat-icon>
-        </button>
-      }
-      </mat-form-field>
-    </mat-card-actions>
     <mat-card-footer>
     @if (loading) {
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     }
     </mat-card-footer>
   </mat-card>
+}
+
+  <div class="message-container">
+    <mat-form-field class="msg-form-field" appearance="outline">
+      <mat-label>Message</mat-label>
+      <input #msg matInput type="text" (keyup.enter)="sendMsg(msg)">
+    @if (msg.value) {
+      <button matSuffix mat-icon-button (click)="sendMsg(msg)">
+        <mat-icon>send</mat-icon>
+      </button>
+    }
+    </mat-form-field>
+  </div>
 }
 </div>

@@ -68,7 +68,7 @@ export class ScannerComponent {
         const accountPubkey = Codec.encode(Prefix.Account, pubkey.toBytes());
         const decoder = new TextDecoder();
 
-        this.natsService.generateUserJWT(req.id, 
+        this.natsService.generateUserJWT(req.user, 
           decoder.decode(userPubkey),
           decoder.decode(accountPubkey),
         ).pipe(
@@ -83,7 +83,7 @@ export class ScannerComponent {
             return `${token}.${sig}`;
           }),
         ).subscribe({
-          next: (token) => this.verifyNATSUserToken(token, req),
+          next: (token) => this.verifyToken(token, req),
           error: (err) => console.error(err),
           complete: () => this.scanDisabled = false,
         });
@@ -92,8 +92,8 @@ export class ScannerComponent {
     }
   }
 
-  verifyNATSUserToken(token: string, req: UserTokenRequest) {
-    this.flarexService.verifyNATSUserToken(req.code, req.id, token).subscribe({
+  verifyToken(token: string, req: UserTokenRequest) {
+    this.flarexService.verifyToken(req.code, req.user, token).subscribe({
       next: (result) => console.log(result),
       error: (err) => console.error(err),
       complete: () => console.log('complete'),
@@ -109,14 +109,14 @@ class UserTokenRequest {
 	type: string = "";
 	url: string = "";
 	code: string = "";
-	id: string = "";
+	user: string = "";
 	pubkey: string = "";
 
   isValid(): boolean {
     if (this.type != 'req_user_token')
       return false;
 
-    if ((this.id == '') || (this.pubkey == '')) {
+    if ((this.user == '') || (this.pubkey == '')) {
       return false;
     }
 
