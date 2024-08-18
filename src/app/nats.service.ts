@@ -36,6 +36,7 @@ export class NatsService {
     const auth = jwtAuthenticator(token, seed);
 
     return from(wsconnect({
+      name: 'app',
       servers: env.NATS_SERVER,
       authenticator: auth,
     }));

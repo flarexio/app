@@ -1,4 +1,4 @@
-<div class="edge-connected">
+<div class="edge-container">
 
 @if (!isNatsConnected) {
   <mat-card class="edge-card" appearance="outlined">
@@ -21,5 +21,17 @@
       <button mat-button (click)="signUserJWT()">Refresh Token</button>
     </mat-card-actions>
   </mat-card>
+
+  @for (edge of edges | async; track edge) {
+  <mat-card class="edge-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>{{ edge.edge?.name }}</mat-card-title>
+      <mat-card-subtitle>{{ edge.id }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <pre>{{ edge.edge | json }}</pre>
+    </mat-card-content>
+  </mat-card>
+  }
 }
 </div>

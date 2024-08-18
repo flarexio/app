@@ -1,5 +1,6 @@
+import { AsyncPipe, JsonPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { concatMap } from 'rxjs';
+import { Observable, concatMap, mergeMap } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,6 +10,7 @@ import { Prefix } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
 import { Base64UrlCodec } from 'nats-jwt';
 
+import { EdgeService, EdgeProxy } from '../edge.service';
 import { NatsService } from '../nats.service';
 import { WalletService } from '../wallet.service';
 
@@ -16,6 +18,8 @@ import { WalletService } from '../wallet.service';
   selector: 'app-edge',
   standalone: true,
   imports: [
+    AsyncPipe,
+    JsonPipe,
     MatButtonModule,
     MatCardModule,
   ],
@@ -23,10 +27,17 @@ import { WalletService } from '../wallet.service';
   styleUrl: './edge.component.scss'
 })
 export class EdgeComponent {
+  edges: Observable<EdgeProxy[] | undefined>;
+
   constructor(
+    private edgeService: EdgeService,
     private natsService: NatsService,
     private walletService: WalletService,
-  ) { }
+  ) {
+    this.edges = this.natsService.connectionChange.pipe(
+      mergeMap((_) => this.edgeService.listEdges())
+    )
+  }
 
   signUserJWT() {
     const currentWallet = this.walletService.currentWallet;

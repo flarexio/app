@@ -18,7 +18,9 @@ export class OllamaService {
     const nc = this.natsService.nc;
     if (nc == undefined) return of(undefined);
 
-    return from(nc.request('ollama.version', Empty, { timeout: 5000 })).pipe(
+    return from(
+      nc.request('ollama.version', Empty, { timeout: 5000 })
+    ).pipe(
       map((msg) => msg.string())
     )
   }
@@ -112,118 +114,22 @@ export class OllamaService {
 }
 
 export class Model {
-	private _name: string = '';
-	private _model: string = '';
-	private _modified_at: Date = new Date();
-	private _size: number = 0;
-	private _digest: string = '';
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public set name(value: string) {
-    this._name = value;
-  }
-
-  public get model(): string {
-    return this._model;
-  }
-
-  public set model(value: string) {
-    this._model = value;
-  }
-
-  public set modified_at(value: Date) {
-    this._modified_at = value;
-  }
-
-  public get modified_at(): Date {
-    return this._modified_at;
-  }
-
-  public get size(): number {
-    return this._size;
-  }
-
-  public set size(value: number) {
-    this._size = value;
-  }
-
-  public get digest(): string {
-    return this._digest;
-  }
-
-  public set digest(value: string) {
-    this._digest = value;
-  }
+	name: string = '';
+	model: string = '';
+	modified_at: Date | undefined;
+	size: number = 0;
+	digest: string = '';
 }
 
 class ChatResponse {
-	private _model: string = '';
-	private _created_at: Date = new Date;
-	private _message: Message = new Message;
-	private _done_reason: string = '';
-	private _done: boolean = false;
-
-  public get model(): string {
-    return this._model;
-  }
-
-  public set model(value: string) {
-    this._model = value;
-  }
-
-  public get created_at(): Date {
-    return this._created_at;
-  }
-
-  public set created_at(value: Date) {
-    this._created_at = value;
-  }
-
-  public get message(): Message {
-    return this._message;
-  }
-
-  public set message(value: Message) {
-    this._message = Object.assign(new Message(), value);
-  }
-
-  public get done_reason(): string {
-    return this._done_reason;
-  }
-
-  public set done_reason(value: string) {
-    this._done_reason = value;
-  }
-
-  public get done(): boolean {
-    return this._done;
-  }
-
-  public set done(value: boolean) {
-    this._done = value;
-  }
+	model: string = '';
+	created_at: Date | undefined;
+	message: Message = new Message();
+	done_reason: string = '';
+	done: boolean = false;
 }
 
 class Message {
-	private _role: string = '';
-	private _content: string = '';
-
-  public get role(): string {
-    return this._role;
-  }
-
-  public set role(value: string) {
-    this._role = value;
-  }
-
-  public get content(): string {
-    return this._content;
-  }
-
-  public set content(value: string) {
-    this._content = value;
-  }
+	role: string = '';
+	content: string = '';
 }

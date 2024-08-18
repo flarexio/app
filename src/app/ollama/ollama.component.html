@@ -23,27 +23,27 @@
     </mat-select>
   </mat-form-field>
 
-<!-- TODO: Generate Chat Component -->
-@if (question != undefined) {
-  <mat-card appearance="outlined">
-    <mat-card-content class="chat-container">
-      <div class="chat-message right">
-        <pre class="question">{{ question }}</pre>
-      </div>
-
-    @if (answer != undefined) {
-      <div class="chat-message left">
-        <pre class="answer">{{ answer }}</pre>
-      </div>
-    }
-    </mat-card-content>
-    <mat-card-footer>
-    @if (loading) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
-    </mat-card-footer>
-  </mat-card>
-}
+  <!-- TODO: Generate Chat Component -->
+  @if (question != undefined) {
+    <mat-card appearance="outlined">
+      <mat-card-content class="chat-container">
+        <div class="chat-message right">
+          <pre class="question">{{ question }}</pre>
+        </div>
+      
+      @if (answer != undefined) {
+        <div class="chat-message left">
+          <pre class="answer">{{ answer }}</pre>
+        </div>
+      }
+      </mat-card-content>
+      <mat-card-footer>
+      @if (loading) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      }
+      </mat-card-footer>
+    </mat-card>
+  }
 
   <div class="message-container">
     <mat-form-field class="msg-form-field" appearance="outline">
