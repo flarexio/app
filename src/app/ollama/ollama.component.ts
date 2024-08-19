@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { Observable, concatMap, from, mergeMap, scan } from 'rxjs';
+import { Observable, concatMap, from, scan } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -51,11 +51,11 @@ export class OllamaComponent {
     private walletService: WalletService,
   ) {
     this.ver = this.natsService.connectionChange.pipe(
-      mergeMap((_) => this.ollamaService.getVersion())
+      concatMap((_) => this.ollamaService.getVersion())
     );
 
     this.models = this.natsService.connectionChange.pipe(
-      mergeMap((_) => this.ollamaService.listModels())
+      concatMap((_) => this.ollamaService.listModels())
     );
   }
 

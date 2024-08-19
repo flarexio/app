@@ -1,7 +1,7 @@
 import { AsyncPipe, CurrencyPipe, SlicePipe } from '@angular/common'
 import { Component, HostListener, ViewChild } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { Observable, concatAll, map, share } from 'rxjs';
+import { Observable, concatMap, share } from 'rxjs';
 
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -80,13 +80,11 @@ export class AppComponent {
     );
 
     this.getAccount = this.walletService.walletChange.pipe(
-      map((pubkey) => this.solService.getAccount(pubkey)),
-      concatAll(),
+      concatMap((pubkey) => this.solService.getAccount(pubkey))
     );
 
     this.getBalance = this.walletService.walletChange.pipe(
-      map((pubkey) => this.solService.getBalance(pubkey)),
-      concatAll(),
+      concatMap((pubkey) => this.solService.getBalance(pubkey)),
       share(),
     );
 

@@ -1,6 +1,6 @@
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { Observable, concatMap, mergeMap } from 'rxjs';
+import { Observable, startWith, concatMap, filter, mergeMap, switchMap, scan } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -28,6 +28,7 @@ import { WalletService } from '../wallet.service';
 })
 export class EdgeComponent {
   edges: Observable<EdgeProxy[] | undefined>;
+  discoveredEdges: EdgeProxy[] = [];
 
   constructor(
     private edgeService: EdgeService,
@@ -35,7 +36,11 @@ export class EdgeComponent {
     private walletService: WalletService,
   ) {
     this.edges = this.natsService.connectionChange.pipe(
-      mergeMap((_) => this.edgeService.listEdges())
+      switchMap((_) => this.edgeService.listEdges().pipe(
+        mergeMap((edges) => this.edgeService.subEdges().pipe(
+          startWith(edges)
+        ))
+      ))
     )
   }
 
@@ -73,6 +78,21 @@ export class EdgeComponent {
 
         localStorage.setItem('nats_jwt', token);
         localStorage.setItem('nats_seed', seed);
+      },
+      error: (err) => console.error(err),
+      complete: () => console.log('complete'),
+    });
+  }
+
+  discoverEdges() {
+    this.discoveredEdges = [];
+
+    this.edgeService.discoverEdges().pipe(
+      filter((edge): edge is EdgeProxy => edge != undefined),
+    ).subscribe({
+      next: (edge) => {
+        this.discoveredEdges.push(edge);
+        this.discoveredEdges.sort((a, b) => (a.id > b.id) ? 1 : -1 )
       },
       error: (err) => console.error(err),
       complete: () => console.log('complete'),

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, from, map, of, scan } from 'rxjs';
+import { BehaviorSubject, Observable, from, map, of } from 'rxjs';
 
 import { Empty, createInbox } from '@nats-io/nats-core';
 
@@ -88,28 +88,6 @@ export class OllamaService {
     nc.publish('ollama.chat', payload, { reply: inbox })
 
     return subject.asObservable();
-  }
-
-  subChats(loading: (value: boolean) => void): Observable<string | undefined> {
-    const nc = this.natsService.nc;
-    if (nc == undefined) return of(undefined);
-
-    return from(
-      nc.subscribe('ollama.chats.>')
-    ).pipe(
-      map((msg) => {
-        const raw = JSON.parse(msg.string()) as ChatResponse;
-        const resp = Object.assign(new ChatResponse(), raw);
-
-        if (resp.done) {
-          loading(false);
-          return '\n';
-        }
-
-        return resp.message.content;
-      }),
-      scan((acc, curr) => acc + curr, ''),
-    )
   }
 }
 

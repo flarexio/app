@@ -15,10 +15,22 @@
 } @else {
   <mat-card class="edge-card" appearance="outlined">
     <mat-card-header>
-      NATS Connected
+      <mat-card-title>NATS Connected</mat-card-title>
     </mat-card-header>
     <mat-card-actions align="end">
       <button mat-button (click)="signUserJWT()">Refresh Token</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="edge-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Edge Discovery</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <pre>{{ discoveredEdges | json }}</pre>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button (click)="discoverEdges()">Discover Edges</button>
     </mat-card-actions>
   </mat-card>
 
@@ -29,7 +41,11 @@
       <mat-card-subtitle>{{ edge.id }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
+    @if (edge.edge == undefined) {
+      <pre>{{ edge.error }}</pre>
+    } @else {
       <pre>{{ edge.edge | json }}</pre>
+    }
     </mat-card-content>
   </mat-card>
   }
