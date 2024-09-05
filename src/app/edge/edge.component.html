@@ -27,26 +27,77 @@
       <mat-card-title>Edge Discovery</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <pre>{{ discoveredEdges | json }}</pre>
+      <mat-form-field class="proxy-selection" appearance="outline">
+        <mat-label>Select Proxy</mat-label>
+        <mat-select [(value)]="selectedProxy">
+        @for (proxy of edgeProxies | async; track proxy) {
+          <mat-option [value]="proxy">{{ proxy.metadata['id'] }} (version: {{ proxy.version }}) </mat-option>
+        }
+        </mat-select>
+      </mat-form-field>
+
+    @if (discoveredEdges.length > 0) {
+      <table #table mat-table [dataSource]="discoveredEdges" class="mat-elevation-z8" 
+             multiTemplateDataRows>
+        <ng-container matColumnDef="instance">
+          <th mat-header-cell *matHeaderCellDef>Instance</th>
+          <td mat-cell *matCellDef="let edge">{{ edge.instance }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="expand" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+          <td mat-cell *matCellDef="let edge">
+            <button mat-icon-button aria-label="expand row" 
+                    (click)="(expandedEdge = expandedEdge === edge ? null : edge); $event.stopPropagation()">
+              @if (expandedEdge === edge) {
+                <mat-icon>keyboard_arrow_up</mat-icon>
+              } @else {
+                <mat-icon>keyboard_arrow_down</mat-icon>
+              }
+            </button>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let edge" 
+              [attr.colspan]="displayedColumns.length">
+            <div class="expanded-detail"  
+                 [@detailExpand]="edge == expandedEdge ? 'expanded' : 'collapsed'">
+              <p>ID: {{ edge.id }}</p>
+              <p>Wallet: {{ edge.edge.wallet | slice: 0 : 20 }}...</p>
+              <button mat-button (click)="addEdge(edge)">Add Edge</button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let edge; columns: displayedColumns;" 
+            [class.expanded-row]="expandedEdge === edge"
+            (click)="expandedEdge = expandedEdge === edge ? null : edge"></tr>
+        <tr mat-row *matRowDef="let edge; columns: ['expandedDetail']" class="expended-detail-row"></tr>
+      </table>
+    }
     </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-button (click)="discoverEdges()">Discover Edges</button>
+      <button mat-button (click)="discoverEdgesFromProxy()">Discover Edges</button>
     </mat-card-actions>
+    <mat-card-footer>
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    </mat-card-footer>
   </mat-card>
 
   @for (edge of edges | async; track edge) {
   <mat-card class="edge-card" appearance="outlined">
     <mat-card-header>
-      <mat-card-title>{{ edge.edge?.name }}</mat-card-title>
+      <mat-card-title>{{ edge.name }}</mat-card-title>
       <mat-card-subtitle>{{ edge.id }}</mat-card-subtitle>
     </mat-card-header>
-    <mat-card-content>
-    @if (edge.edge == undefined) {
-      <pre>{{ edge.error }}</pre>
-    } @else {
-      <pre>{{ edge.edge | json }}</pre>
-    }
-    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button (click)="openChangeEdgeDialog(edge)">Change</button>
+      <button mat-button (click)="openNetworksDialog(edge)">Networks</button>
+    </mat-card-actions>
   </mat-card>
   }
 }

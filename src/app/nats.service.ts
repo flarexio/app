@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 
-import { Msg, NatsConnection, StringCodec, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
+import { Empty, Msg, NatsConnection, StringCodec, createInbox, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
 import { base32 } from '@nats-io/nkeys/lib/base32';
 import { Algorithms, Base64UrlCodec, Types, User, randomID } from 'nats-jwt';
 import * as jwt from 'nats-jwt';
@@ -55,7 +55,56 @@ export class NatsService {
     const nc = this._nc;
     if (nc == undefined) return of(undefined);
 
-    return from(nc.subscribe(subject));
+    return new Observable<Msg>(observer => {
+      const subscription = nc.subscribe(subject, {
+        callback: (err, msg) => {
+          if (err) {
+            observer.error(err);
+          } else {
+            observer.next(msg);
+          }
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      }
+    });
+  }
+
+  discoverServices(name: string): Observable<ServiceIdentity | undefined> {
+    const nc = this._nc;
+    if (nc == undefined) return of(undefined);
+
+    const subject = new BehaviorSubject<ServiceIdentity | undefined>(undefined);
+
+    const inbox = createInbox();
+
+    const sub = nc.subscribe(inbox, {
+      timeout: 5000,
+      callback: (err, msg) => {
+        if (err != null) {
+          sub.unsubscribe();
+          subject.complete();
+          return;
+        }
+
+        if (msg.data.every((value, index) => value === Empty[index])) {
+          sub.unsubscribe();
+          subject.complete();
+          return;
+        }
+
+        const raw = JSON.parse(msg.string()) as ServiceIdentity;
+        const proxy = Object.assign(new ServiceIdentity(), raw);
+
+        subject.next(proxy);
+      }
+    });
+
+    nc.publish(`$SRV.PING.${name}`, Empty, { reply: inbox });
+
+    return subject.asObservable();
   }
 
   private async _generateUserJWT(name: string, user: string, account: string): Promise<string> {
@@ -114,4 +163,11 @@ export class NatsService {
   public get isConnected(): boolean {
     return this._nc != undefined;
   }
+}
+
+export class ServiceIdentity {
+	name: string = '';
+	id: string = '';
+	version: string = '';
+	metadata: { [key: string]: string } = {};
 }

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Change Edge</h2>
+<mat-dialog-content>
+	<mat-form-field>
+		<mat-label>Name</mat-label>
+		<input matInput [formControl]="name" 
+           (blur)="updateErrorMessage()">
+    @if (name.invalid) {
+      <mat-error>{{ errorMessage() }}</mat-error>
+    }
+	</mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+	<button mat-button [disabled]="name.invalid" 
+          (click)="changeName()">Change</button>
+</mat-dialog-actions>

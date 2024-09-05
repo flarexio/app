@@ -1,47 +1,99 @@
-import { AsyncPipe, JsonPipe } from '@angular/common';
-import { Component } from '@angular/core';
-import { Observable, startWith, concatMap, filter, mergeMap, switchMap, scan } from 'rxjs';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AsyncPipe, SlicePipe } from '@angular/common';
+import { Component, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable, concatMap, filter, map, merge, scan, switchMap } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule, MatTable } from '@angular/material/table';
 
 import { createUser } from '@nats-io/nkeys';
 import { Prefix } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
 import { Base64UrlCodec } from 'nats-jwt';
 
-import { EdgeService, EdgeProxy } from '../edge.service';
-import { NatsService } from '../nats.service';
+import { EdgeService, EdgeProxy, Edge } from '../edge.service';
+import { NatsService, ServiceIdentity } from '../nats.service';
 import { WalletService } from '../wallet.service';
+import { ChangeEdgeDialogComponent } from './change-edge-dialog/change-edge-dialog.component';
+import { NetworkDialogComponent } from './network-dialog/network-dialog.component';
 
 @Component({
   selector: 'app-edge',
   standalone: true,
   imports: [
     AsyncPipe,
-    JsonPipe,
+    SlicePipe,
     MatButtonModule,
     MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatSelectModule,
+    MatTableModule,
   ],
   templateUrl: './edge.component.html',
-  styleUrl: './edge.component.scss'
+  styleUrl: './edge.component.scss',
+  animations:  [
+    trigger('detailExpand', [
+      state('collapsed,void', style({height: '0px', minHeight: '0'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ]
 })
 export class EdgeComponent {
-  edges: Observable<EdgeProxy[] | undefined>;
+  edgeProxies: Observable<ServiceIdentity[] | undefined>;
+  selectedProxy: ServiceIdentity | undefined;
+
+  edges: Observable<Edge[] | undefined>;
+
+  displayedColumns: string[] = [ 'instance', 'expand' ];
   discoveredEdges: EdgeProxy[] = [];
+  expandedEdge: EdgeProxy | null = null;
+  loading: boolean = false;
+
+  @ViewChild(MatTable) table: MatTable<EdgeProxy> | undefined;
 
   constructor(
     private edgeService: EdgeService,
     private natsService: NatsService,
     private walletService: WalletService,
+    private dialog: MatDialog,
   ) {
+    this.edgeProxies = this.natsService.connectionChange.pipe(
+      filter((nc) => nc != undefined),
+      switchMap((_) => this.natsService.discoverServices('edge-proxy')),
+      filter((svc): svc is ServiceIdentity  => svc != undefined), 
+      scan((acc, curr) => [ ...acc, curr ], new Array<ServiceIdentity>()),
+    );
+
     this.edges = this.natsService.connectionChange.pipe(
-      switchMap((_) => this.edgeService.listEdges().pipe(
-        mergeMap((edges) => this.edgeService.subEdges().pipe(
-          startWith(edges)
-        ))
-      ))
-    )
+      takeUntilDestroyed(),
+      filter((nc) => nc != undefined),
+      switchMap((_) => merge(
+        this.edgeService.discoverEdges(),
+        this.edgeService.edgeAddedHandler(),
+      )),
+      scan((acc, curr) => {
+        const index = acc.findIndex((edge) => edge.id === curr.id);
+
+        if (index > -1) {
+          acc[index] = curr;
+        } else {
+          acc.push(curr);
+        }
+
+        return acc;
+      }, new Array<Edge>()),
+      map((edges) => edges.sort((a, b) => (a.id > b.id) ? 1 : -1)),
+    );
   }
 
   signUserJWT() {
@@ -84,18 +136,76 @@ export class EdgeComponent {
     });
   }
 
-  discoverEdges() {
+  discoverEdgesFromProxy() {
+    const selectedProxy = this.selectedProxy;
+    if (selectedProxy == undefined) return;
+
     this.discoveredEdges = [];
 
-    this.edgeService.discoverEdges().pipe(
+    this.loading = true;
+
+    this.edgeService.discoverEdgesFromProxy(selectedProxy.metadata['id']).pipe(
       filter((edge): edge is EdgeProxy => edge != undefined),
     ).subscribe({
       next: (edge) => {
         this.discoveredEdges.push(edge);
-        this.discoveredEdges.sort((a, b) => (a.id > b.id) ? 1 : -1 )
+        this.discoveredEdges.sort((a, b) => (a.id > b.id) ? 1 : -1 );
+
+        this.table?.renderRows();
       },
       error: (err) => console.error(err),
+      complete: () => this.loading = false,
+    });
+  }
+
+  addEdge(edgeProxy: EdgeProxy) {
+    const selectedProxy = this.selectedProxy;
+    if (selectedProxy == undefined) return;
+
+    const currentWallet = this.walletService.currentWallet;
+    if (currentWallet == undefined) return;
+
+    const pubkey = currentWallet.publicKey;
+    if (pubkey == null) return;
+
+    const edge = edgeProxy.edge;
+    if (edge == undefined) return;
+
+    const accountPubkey = Codec.encode(Prefix.Account, pubkey.toBytes());
+    const userPubkey = Codec.encode(Prefix.User, edge.publicKey.toBytes());
+    const decoder = new TextDecoder();
+
+    this.natsService.generateUserJWT(edge.id, 
+      decoder.decode(userPubkey),
+      decoder.decode(accountPubkey),
+    ).pipe(
+      concatMap(async (token) => {
+        const encoder = new TextEncoder();
+        const tokenBytes = encoder.encode(token);
+
+        const sigBytes = await currentWallet.signMessage(tokenBytes);
+        if (sigBytes == undefined) return "invalid sigurature";
+
+        const sig = Base64UrlCodec.encode(sigBytes);
+        return `${token}.${sig}`;
+      }),
+      concatMap((token) => this.edgeService.addEdge(selectedProxy.metadata['id'], edgeProxy, token))
+    ).subscribe({
+      next: (edge) => console.log(edge),
+      error: (err: Error) => console.error(err.message),
       complete: () => console.log('complete'),
+    })
+  }
+
+  openChangeEdgeDialog(edge: Edge) {
+    this.dialog.open(ChangeEdgeDialogComponent, {
+      data: { edge: edge }
+    });
+  }
+
+  openNetworksDialog(edge: Edge) {
+    this.dialog.open(NetworkDialogComponent, {
+      data: { edge: edge }
     });
   }
 

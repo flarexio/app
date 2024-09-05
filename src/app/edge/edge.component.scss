@@ -8,3 +8,26 @@
 .edge-card {
   margin: 10px;
 }
+
+.proxy-selection {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.expanded-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.expanded-row td {
+  border-bottom-width: 0;
+}
+
+tr {
+  width: 100%;
+}
+
+tr.expended-detail-row {
+  height: 0;
+}

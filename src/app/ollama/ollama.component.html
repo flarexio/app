@@ -8,9 +8,6 @@
     <mat-card-content>
       <p>To establish a NATS connection, you need to sign a certificate with your wallet.</p>
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button (click)="signUserJWT()">Sign Token</button>
-    </mat-card-actions>
   </mat-card>
 } @else {
   <p>Ollama Chat (Version: {{ ver | async }})</p>
