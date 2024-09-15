@@ -11,18 +11,26 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule, MatTable } from '@angular/material/table';
 
+import * as anchor from '@coral-xyz/anchor';
+import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { createUser } from '@nats-io/nkeys';
 import { Prefix } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
 import { Base64UrlCodec } from 'nats-jwt';
+import { PublicKey } from '@solana/web3.js';
 
+import { Flarex } from '../model/flarex';
+import IDL from '../model/flarex.json';
 import { EdgeService, EdgeProxy, Edge } from '../edge.service';
 import { NatsService, ServiceIdentity } from '../nats.service';
+import { SolanaService } from '../solana.service';
 import { WalletService } from '../wallet.service';
 import { ChangeEdgeDialogComponent } from './change-edge-dialog/change-edge-dialog.component';
 import { NetworkDialogComponent } from './network-dialog/network-dialog.component';
+import { TransactionSnackbarComponent } from '../transaction-snackbar/transaction-snackbar.component';
 
 @Component({
   selector: 'app-edge',
@@ -36,6 +44,7 @@ import { NetworkDialogComponent } from './network-dialog/network-dialog.componen
     MatIconModule,
     MatProgressBarModule,
     MatSelectModule,
+    MatSnackBarModule,
     MatTableModule,
   ],
   templateUrl: './edge.component.html',
@@ -64,8 +73,10 @@ export class EdgeComponent {
   constructor(
     private edgeService: EdgeService,
     private natsService: NatsService,
+    private solService: SolanaService,
     private walletService: WalletService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {
     this.edgeProxies = this.natsService.connectionChange.pipe(
       filter((nc) => nc != undefined),
@@ -96,6 +107,43 @@ export class EdgeComponent {
     );
   }
 
+  async pushAccount() {
+    const connection = this.solService.connection;
+
+    if (this.walletService.currentWallet == undefined) {
+      return;
+    }
+
+    const wallet = this.walletService.asAnchorWallet();
+
+    const provider = new AnchorProvider(connection, wallet)
+
+    const idl = IDL as Flarex;
+    const program = new Program<Flarex>(idl, provider);
+
+    const [ natsPDA ] = PublicKey.findProgramAddressSync([
+      anchor.utils.bytes.utf8.encode('nats'), 
+      wallet.publicKey.toBuffer(), 
+      Uint8Array.of(2),
+    ], program.programId);
+
+    const tx = await program.methods
+      .resetNatsAccount(0)
+      .accounts({
+        authority: wallet.publicKey,
+        account: natsPDA,
+      })
+      .rpc()
+
+    this.snackBar.openFromComponent(TransactionSnackbarComponent, {
+      data: {
+        signature: tx,
+        network: this.solService.network,
+        action: () => {},
+      }
+    })
+  }
+
   signUserJWT() {
     const currentWallet = this.walletService.currentWallet;
     if (currentWallet == undefined) return;
@@ -122,15 +170,18 @@ export class EdgeComponent {
         const sig = Base64UrlCodec.encode(sigBytes);
         return `${token}.${sig}`;
       }),
-    ).subscribe({
-      next: (token) => {
+      concatMap((token) => {
         const decoder = new TextDecoder();
         const seedBytes = user.getSeed();
         const seed = decoder.decode(seedBytes);
 
         localStorage.setItem('nats_jwt', token);
         localStorage.setItem('nats_seed', seed);
-      },
+
+        return this.natsService.connect(token, seedBytes);
+      })
+    ).subscribe({
+      next: (nc) => this.natsService.nc = nc,
       error: (err) => console.error(err),
       complete: () => console.log('complete'),
     });

@@ -1,0 +1,629 @@
+{
+  "address": "fx72MZ7SPxwePzFiMagFZakeXxaJn7oLGDd3wxLuENL",
+  "metadata": {
+    "name": "flarex",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_edge",
+      "discriminator": [
+        244,
+        46,
+        8,
+        33,
+        230,
+        159,
+        6,
+        244
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "collection"
+          ]
+        },
+        {
+          "name": "edge",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "edge",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "clear_collection",
+      "discriminator": [
+        76,
+        110,
+        14,
+        211,
+        42,
+        225,
+        76,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "collection"
+          ]
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expand_collection",
+      "discriminator": [
+        222,
+        196,
+        186,
+        127,
+        183,
+        36,
+        154,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "capacity",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "capacity",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "reset_nats_account",
+      "discriminator": [
+        99,
+        199,
+        100,
+        222,
+        8,
+        191,
+        173,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "capacity",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "setup_nats_account",
+      "discriminator": [
+        207,
+        48,
+        97,
+        233,
+        130,
+        133,
+        23,
+        134
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_edge",
+      "discriminator": [
+        99,
+        164,
+        173,
+        98,
+        171,
+        115,
+        227,
+        178
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "edge"
+          ]
+        },
+        {
+          "name": "edge",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "edge",
+          "type": {
+            "defined": {
+              "name": "Edge"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Edge",
+      "discriminator": [
+        14,
+        2,
+        21,
+        11,
+        215,
+        231,
+        136,
+        24
+      ]
+    },
+    {
+      "name": "EdgeCollection",
+      "discriminator": [
+        30,
+        86,
+        115,
+        70,
+        134,
+        111,
+        255,
+        28
+      ]
+    },
+    {
+      "name": "NatsAccount",
+      "discriminator": [
+        110,
+        65,
+        90,
+        108,
+        209,
+        79,
+        99,
+        148
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NewSizeTooSmall",
+      "msg": "New size must be greater than the original capacity."
+    },
+    {
+      "code": 6001,
+      "name": "EdgeCollectionFull",
+      "msg": "The edge collection is full."
+    },
+    {
+      "code": 6002,
+      "name": "NameTooLong",
+      "msg": "The name cannot exceed 100 bytes."
+    }
+  ],
+  "types": [
+    {
+      "name": "AccountLimits",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "imports",
+            "type": "i64"
+          },
+          {
+            "name": "exports",
+            "type": "i64"
+          },
+          {
+            "name": "wildcard",
+            "type": "bool"
+          },
+          {
+            "name": "disallow_bearer",
+            "type": "bool"
+          },
+          {
+            "name": "conn",
+            "type": "i64"
+          },
+          {
+            "name": "leaf",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Edge",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "Metadata"
+              }
+            }
+          },
+          {
+            "name": "id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "edge",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EdgeCollection",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "Metadata"
+              }
+            }
+          },
+          {
+            "name": "edges",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            }
+          },
+          {
+            "name": "capacity",
+            "type": "u32"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "JetStreamLimits",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mem_storage",
+            "type": "i64"
+          },
+          {
+            "name": "disk_storage",
+            "type": "i64"
+          },
+          {
+            "name": "streams",
+            "type": "i64"
+          },
+          {
+            "name": "consumer",
+            "type": "i64"
+          },
+          {
+            "name": "max_ack_pending",
+            "type": "i64"
+          },
+          {
+            "name": "mem_max_stream_bytes",
+            "type": "i64"
+          },
+          {
+            "name": "disk_max_stream_bytes",
+            "type": "i64"
+          },
+          {
+            "name": "max_bytes_required",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metadata",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Edge",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "EdgeCollection",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "NatsAccount",
+            "fields": [
+              "u8"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "NatsAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "Metadata"
+              }
+            }
+          },
+          {
+            "name": "limits",
+            "type": {
+              "defined": {
+                "name": "OperatorLimits"
+              }
+            }
+          },
+          {
+            "name": "revocations",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "RevocationEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "capacity",
+            "type": "u32"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NatsLimits",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subs",
+            "type": "i64"
+          },
+          {
+            "name": "data",
+            "type": "i64"
+          },
+          {
+            "name": "payload",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperatorLimits",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nats_limits",
+            "type": {
+              "defined": {
+                "name": "NatsLimits"
+              }
+            }
+          },
+          {
+            "name": "account_limits",
+            "type": {
+              "defined": {
+                "name": "AccountLimits"
+              }
+            }
+          },
+          {
+            "name": "jetstream_limits",
+            "type": {
+              "defined": {
+                "name": "JetStreamLimits"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevocationEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "all",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}

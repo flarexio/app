@@ -7,10 +7,6 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 
 import { Edge, EdgeService, NetworkInterface } from '../../edge.service';
 
-interface DialogData {
-  edge: Edge;
-}
-
 @Component({
   selector: 'network-dialog',
   standalone: true,
@@ -34,4 +30,8 @@ export class NetworkDialogComponent {
   ) {
     this.networks = this.edgeService.networks(this.edge.id);
   }
+}
+
+interface DialogData {
+  edge: Edge;
 }

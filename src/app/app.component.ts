@@ -119,7 +119,7 @@ export class AppComponent {
 
     this.currentWallet = undefined;
 
-    localStorage.removeItem('default_wallet');
+    localStorage.clear();
   }
 
   switchRouter(path: string) {

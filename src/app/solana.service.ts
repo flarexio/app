@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, from, map, of } from 'rxjs';
 
-import { Connection, PublicKey, Version, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Connection, PublicKey, Version, TransactionConfirmationStrategy, TransactionSignature, RpcResponseAndContext, SignatureResult, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { getFavoriteDomain } from '@bonfida/spl-name-service';
 
@@ -60,6 +60,29 @@ export class SolanaService {
       this.connection.getBalance(pubkey),
     ).pipe(
       map((balance) => balance / LAMPORTS_PER_SOL),
+    );
+  }
+
+  confirmTransaction(transaction: TransactionConfirmationStrategy | TransactionSignature): Observable<{}> {
+    let observable: Observable<RpcResponseAndContext<SignatureResult>>;
+
+    if (typeof transaction == 'string') {
+      const signature: TransactionSignature = transaction;
+      observable = from(this.connection.confirmTransaction(signature));
+    } else {
+      const strategy = transaction;
+      observable = from(this.connection.confirmTransaction(strategy));
+    }
+
+    return observable.pipe(
+      map((result) => {
+        const err = result.value.err;
+        if ((err != null) && (typeof err == 'string')) {
+          throw new Error(err)
+        }
+
+        return {};
+      })
     );
   }
 

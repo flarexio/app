@@ -9,6 +9,7 @@
       <p>To establish a NATS connection, you need to sign a certificate with your wallet.</p>
     </mat-card-content>
     <mat-card-actions align="end">
+      <button mat-button (click)="pushAccount()">Push Account</button>
       <button mat-button (click)="signUserJWT()">Sign Token</button>
     </mat-card-actions>
   </mat-card>
@@ -18,6 +19,7 @@
       <mat-card-title>NATS Connected</mat-card-title>
     </mat-card-header>
     <mat-card-actions align="end">
+      <button mat-button (click)="pushAccount()">Push Account</button>
       <button mat-button (click)="signUserJWT()">Refresh Token</button>
     </mat-card-actions>
   </mat-card>
