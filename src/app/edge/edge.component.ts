@@ -19,7 +19,7 @@ import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { createUser } from '@nats-io/nkeys';
 import { Prefix } from '@nats-io/nkeys';
 import { Codec } from '@nats-io/nkeys/lib/codec';
-import { Base64UrlCodec } from 'nats-jwt';
+import { Base64UrlCodec } from '@nats-io/jwt';
 import { PublicKey } from '@solana/web3.js';
 
 import { Flarex } from '../model/flarex';

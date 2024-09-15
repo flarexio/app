@@ -3,8 +3,8 @@ import { BehaviorSubject, Observable, from, of } from 'rxjs';
 
 import { Empty, Msg, NatsConnection, StringCodec, createInbox, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
 import { base32 } from '@nats-io/nkeys/lib/base32';
-import { Algorithms, Base64UrlCodec, Types, User, randomID } from 'nats-jwt';
-import * as jwt from 'nats-jwt';
+import { Algorithms, Base64UrlCodec, Types, User, randomID } from '@nats-io/jwt';
+import * as jwt from '@nats-io/jwt';
 
 import { environment as env } from '../environments/environment';
 
