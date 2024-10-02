@@ -1,18 +1,22 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { filter, from, switchMap } from 'rxjs';
 
+import { MatCardModule } from '@angular/material/card';
+
 import { Empty, MsgHdrsImpl, NatsConnection, createInbox } from '@nats-io/nats-core';
 
 import { NatsService } from '../nats.service';
 
 @Component({
-  selector: 'app-surveillance',
+  selector: 'app-game',
   standalone: true,
-  imports: [],
-  templateUrl: './surveillance.component.html',
-  styleUrl: './surveillance.component.scss'
+  imports: [
+    MatCardModule,
+  ],
+  templateUrl: './game.component.html',
+  styleUrl: './game.component.scss'
 })
-export class SurveillanceComponent {
+export class GameComponent {
   @ViewChild('remoteVideo')
   remoteVideo!: ElementRef<HTMLVideoElement>;
 
@@ -72,6 +76,7 @@ export class SurveillanceComponent {
     });
 
     peer.addTransceiver('video', { direction: 'recvonly' });
+    peer.addTransceiver('audio', { direction: 'recvonly' });
 
     // const channel = peer.createDataChannel('stream');
     // channel.addEventListener('open', async (_) => {
@@ -95,7 +100,7 @@ export class SurveillanceComponent {
       const offerOpts: RTCOfferOptions = {
         iceRestart: true,
         offerToReceiveVideo: true,
-        offerToReceiveAudio: false,
+        offerToReceiveAudio: true,
       };
 
       const offer = await peer.createOffer(offerOpts);
