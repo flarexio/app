@@ -1,16 +1,19 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { filter, from, switchMap } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Observable, filter, from, interval, map, of, switchMap } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
 
 import { Empty, MsgHdrsImpl, NatsConnection, createInbox } from '@nats-io/nats-core';
 
 import { NatsService } from '../nats.service';
+import { xboxButtonMap, XBoxReport } from './gamepad';
 
 @Component({
   selector: 'app-game',
   standalone: true,
   imports: [
+    AsyncPipe,
     MatCardModule,
   ],
   templateUrl: './game.component.html',
@@ -19,6 +22,10 @@ import { NatsService } from '../nats.service';
 export class GameComponent {
   @ViewChild('remoteVideo')
   remoteVideo!: ElementRef<HTMLVideoElement>;
+
+  gamepadChannel: RTCDataChannel | undefined;
+
+  rtt: Observable<number> = of(0);
 
   constructor(
     private natsService: NatsService,
@@ -30,6 +37,56 @@ export class GameComponent {
       error: (err) => console.error(err),
       complete: () => console.log('complete'),
     })
+  }
+
+  @HostListener('window:gamepadconnected', ['$event'])
+  gamepadConnectedHandler($event: GamepadEvent) {
+    console.log(
+      "Gamepad connected at index %d: %s. %d buttons, %d axes.",
+      $event.gamepad.index,
+      $event.gamepad.id,
+      $event.gamepad.buttons.length,
+      $event.gamepad.axes.length,
+    );
+
+    this.pollGamepad(0, 0);
+  }
+
+  pollGamepad(index: number, last: number) {
+    const gamepad = navigator.getGamepads()[index];
+    if (gamepad == null) return;
+
+    if (gamepad.timestamp > last) {
+      const report = new XBoxReport();
+
+      const buttons = gamepad.buttons;
+      for (let i = 0; i < buttons.length; i++) {
+        const button = buttons[i];
+        if (i == 6) {
+          report.leftTrigger = Math.round(button.value * 255);
+        } else if (i == 7) {
+          report.rightTrigger = Math.round(button.value * 255);
+        } else {
+          if (button.pressed) {
+            report.buttons |= xboxButtonMap[i]
+          }
+        }
+      }
+
+      const axes = gamepad.axes;
+      report.leftThumbStickX = Math.round(axes[0] * 32767);
+      report.leftThumbStickY = Math.round(axes[1] * -32767);
+      report.rightThumbStickX = Math.round(axes[2] * 32767);
+      report.rightThumbStickY = Math.round(axes[3] * -32767);
+
+      if (this.gamepadChannel != undefined) {
+        const data = report.toBuffer();
+
+        this.gamepadChannel.send(data);
+      }
+    }
+
+    requestAnimationFrame(() => this.pollGamepad(index, gamepad.timestamp));
   }
 
   async makePeer(nc: NatsConnection) {
@@ -60,6 +117,23 @@ export class GameComponent {
       console.log(`connection state changed: ${peer.connectionState}`);
     });
 
+    this.rtt = interval(1000).pipe(
+      switchMap(() => from(peer.getStats()).pipe(
+        map((stat) => {
+          let report: any = undefined;
+          stat.forEach((value, key, parent) => {
+            if (value.type === 'candidate-pair' && value.state === 'succeeded') {
+              report = value;
+            }
+          });
+
+          return report;
+        }),
+        filter((report) => report != undefined),
+        map((report) => report.currentRoundTripTime * 1000)
+      ))
+    )
+
     peer.addEventListener('icecandidate', (event) => {
       const candidate = event.candidate;
       if (candidate == null) return;
@@ -78,23 +152,9 @@ export class GameComponent {
     peer.addTransceiver('video', { direction: 'recvonly' });
     peer.addTransceiver('audio', { direction: 'recvonly' });
 
-    // const channel = peer.createDataChannel('stream');
-    // channel.addEventListener('open', async (_) => {
-    //   console.log('channel opened');
-
-    //   // const msg = await nc.request("stream.origins", Empty, { timeout: 5000, noMux: true });
-    //   // const origins = JSON.parse(msg.string()) as number[];
-
-    //   // const buf = new ArrayBuffer(4);
-    //   // const view = new DataView(buf);
-    //   // view.setUint32(0, origins[0]);
-
-    //   // channel.send(buf);
-
-    //   channel.send('play');
-    // });
-
-    // channel.addEventListener('close', (_) => console.log('channel closed'));
+    this.gamepadChannel = peer.createDataChannel('gamepad');
+    this.gamepadChannel.addEventListener('open', (_) => console.log('gamepad channel opened'));
+    this.gamepadChannel.addEventListener('close', (_) => console.log('gamepad channel closed'));
 
     try {
       const offerOpts: RTCOfferOptions = {
