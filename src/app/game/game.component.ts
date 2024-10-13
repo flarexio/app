@@ -20,9 +20,14 @@ import { xboxButtonMap, XBoxReport } from './gamepad';
   styleUrl: './game.component.scss'
 })
 export class GameComponent {
-  @ViewChild('remoteVideo')
-  remoteVideo!: ElementRef<HTMLVideoElement>;
+  // @ViewChild('remoteVideo')
+  // remoteVideo!: ElementRef<HTMLVideoElement>;
 
+  // @ViewChild('remoteAudio')
+  // remoteAudio!: ElementRef<HTMLAudioElement>;
+
+  videoStream: MediaStream = new MediaStream();
+  audioStream: MediaStream = new MediaStream();
   gamepadChannel: RTCDataChannel | undefined;
 
   rtt: Observable<number> = of(0);
@@ -143,27 +148,28 @@ export class GameComponent {
     });
 
     peer.addEventListener('track', async (event) => {
-      console.log(event);
+      switch (event.track.kind) {
+        case 'video':
+          this.videoStream.addTrack(event.track);
+          console.log('added video track');
+          return;
 
-      const stream = event.streams[0];
-      this.remoteVideo.nativeElement.srcObject = stream;
+        case 'audio':
+          this.audioStream.addTrack(event.track);
+          console.log('added audio track');
+          return;
+      }
     });
 
-    peer.addTransceiver('video', { direction: 'recvonly' });
-    peer.addTransceiver('audio', { direction: 'recvonly' });
+    peer.addTransceiver('video', { direction: 'recvonly', streams: [ this.videoStream ] });
+    peer.addTransceiver('audio', { direction: 'recvonly', streams: [ this.audioStream ] });
 
     this.gamepadChannel = peer.createDataChannel('gamepad');
     this.gamepadChannel.addEventListener('open', (_) => console.log('gamepad channel opened'));
     this.gamepadChannel.addEventListener('close', (_) => console.log('gamepad channel closed'));
 
     try {
-      const offerOpts: RTCOfferOptions = {
-        iceRestart: true,
-        offerToReceiveVideo: true,
-        offerToReceiveAudio: true,
-      };
-
-      const offer = await peer.createOffer(offerOpts);
+      const offer = await peer.createOffer();
       console.log('Offer from peerConnection');
       console.log(offer.sdp);
 
