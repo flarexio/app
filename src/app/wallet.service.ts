@@ -1,8 +1,19 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, concatMap, map } from 'rxjs';
+
+import { 
+  CredentialCreationOptionsJSON, CredentialRequestOptionsJSON, 
+  create, get, 
+} from "@github/webauthn-json";
+
+import { environment as env } from '../environments/environment';
 
 import { Connection, PublicKey, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
-import { BaseMessageSignerWalletAdapter, SendTransactionOptions, SupportedTransactionVersions, TransactionOrVersionedTransaction, WalletConnectionError } from '@solana/wallet-adapter-base';
+import { 
+  BaseMessageSignerWalletAdapter, SendTransactionOptions, SupportedTransactionVersions, 
+  TransactionOrVersionedTransaction, WalletConnectionError, 
+} from '@solana/wallet-adapter-base';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 
@@ -10,6 +21,8 @@ import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
   providedIn: 'root'
 })
 export class WalletService {
+  private baseURL = env.FLAREX_WALLET_BASEURL;
+
   private _currentWallet: BaseMessageSignerWalletAdapter | undefined;
   private _walletChangeSubject = new BehaviorSubject<PublicKey | null>(null);
 
@@ -20,7 +33,25 @@ export class WalletService {
     new SolflareWalletAdapter,
   ];
 
-  constructor() { }
+  constructor(
+    private http: HttpClient,
+  ) { }
+
+  registerPasskey(user_id: string, username: string): Observable<string> {
+    return this.http.post(`${this.baseURL}/passkeys/registration/initialize`, { user_id, username }).pipe(
+      concatMap((opts) => create(opts as CredentialCreationOptionsJSON)),
+      concatMap((credential) => this.http.post(`${this.baseURL}/passkeys/registration/finalize`, credential)),
+      map((token) => token as string),
+    );
+  }
+
+  loginWithPasskey(user_id: string): Observable<string> {
+    return this.http.post(`${this.baseURL}/passkeys/login/initialize`, { user_id }).pipe(
+      concatMap((opts) => get(opts as CredentialRequestOptionsJSON)),
+      concatMap((credential) => this.http.post(`${this.baseURL}/passkeys/login/finalize`, credential)),
+      map((token) => token as string),
+    );
+  }
 
   public autoConnect(name: string) {
     for (let wallet of this.wallets) {

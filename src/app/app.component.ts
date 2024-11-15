@@ -7,6 +7,7 @@ import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-s
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
@@ -14,8 +15,14 @@ import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { 
+  SignMessagePayload, 
+  WalletMessage, WalletMessageType, WalletMessageResponse,
+} from '@flarex/wallet-adapter';
 import { Connection } from '@solana/web3.js';
 import { BaseMessageSignerWalletAdapter, WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { v4 as uuid } from 'uuid';
+import * as base58 from 'bs58';
 
 import { SolanaService } from './solana.service';
 import { WalletService } from './wallet.service';
@@ -33,6 +40,7 @@ import { WalletBottomSheetComponent } from './wallet-bottom-sheet/wallet-bottom-
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatListModule,
     MatMenuModule,
     MatSelectModule,
@@ -51,6 +59,8 @@ export class AppComponent {
 
   getAccount: Observable<string | undefined>;
   getBalance: Observable<number | undefined>;
+
+  signedResult = '';
 
   @ViewChild(MatDrawer) drawer: MatDrawer | undefined;
 
@@ -97,6 +107,79 @@ export class AppComponent {
   @HostListener('window:resize', ['$event'])
   windowResizeHandler() {
     this.width = window.innerWidth;
+  }
+
+  private walletWindow: WindowProxy | null = null;
+  private todo: WalletMessage | undefined;
+
+  @HostListener('window:message', ['$event'])
+  messageHandler(event: MessageEvent) {
+    console.log(event);
+
+    if (event.origin != 'https://wallet.flarex.io') return;
+
+    // wallet is ready
+    if (event.data == 'WALLET_READY') {
+      if (this.todo == undefined) return;
+
+      this.walletWindow?.postMessage(this.todo, 'https://wallet.flarex.io');
+      this.todo = undefined;
+      return;
+    }
+
+    // sign message
+    const msg = event.data as WalletMessageResponse;
+    if (msg.type == WalletMessageType.SIGN_MESSAGE) {
+      if (!msg.success) {
+        this.signedResult = msg.error ?? 'unknown error';
+        return;
+      }
+
+      const payload = msg.payload as SignMessagePayload;
+      const bytes = payload.sig;
+      if (bytes == undefined) {
+        this.signedResult = 'no signature';
+        return;
+      }
+
+      const based58 = base58.encode(bytes);
+      this.signedResult = based58;
+    }
+  }
+
+  openWindow() {
+    const width = 440;
+    const height = 700;
+    const left = window.screenX + window.outerWidth - 10;
+    const top = window.screenY;
+
+    this.walletWindow = window.open('https://wallet.flarex.io', 'wallet', 
+      `width=${width},height=${height},top=${top},left=${left}`);
+
+    setInterval(() => {
+      if (this.todo == undefined) return;
+
+      this.walletWindow?.postMessage('IS_READY', 'https://wallet.flarex.io');
+    }, 1000);
+  }
+
+  signMessage(message: string) {
+    if (this.walletWindow == null) {
+      this.openWindow();
+    }
+
+    const payload: SignMessagePayload = {
+      msg: new TextEncoder().encode(message),
+    };
+
+    const msg: WalletMessage = {
+      id: uuid(),
+      origin: 'https://app.flarex.io',
+      type: WalletMessageType.SIGN_MESSAGE,
+      payload,
+    };
+
+    this.todo = msg;
   }
 
   openWalletBottomSheet() {

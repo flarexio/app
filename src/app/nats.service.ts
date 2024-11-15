@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 
-import { Empty, Msg, NatsConnection, StringCodec, createInbox, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
+import { Empty, Msg, NatsConnection, createInbox, jwtAuthenticator, wsconnect } from '@nats-io/nats-core';
 import { base32 } from '@nats-io/nkeys/lib/base32';
 import { Algorithms, Base64UrlCodec, Types, User, randomID } from '@nats-io/jwt';
 import * as jwt from '@nats-io/jwt';
@@ -46,9 +46,7 @@ export class NatsService {
     const nc = this._nc;
     if (nc == undefined) return;
 
-    const sc = StringCodec();
-
-    nc.publish(subject, sc.encode(message));
+    nc.publish(subject, message);
   }
 
   subscribe(subject: string): Observable<Msg | undefined> {
