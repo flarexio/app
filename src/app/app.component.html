@@ -96,7 +96,10 @@
       <input matInput #message>
     </mat-form-field>
     <button mat-button (click)="signMessage(message.value)">Sign Message</button>
-    <pre>{{ signedResult }}</pre>
+    <button mat-button (click)="signMessageV2(message.value)">Sign MessageV2</button>
+    <pre style="white-space: pre-wrap; word-wrap: break-word;">
+      {{ signedResult }}
+    </pre>
   </div>
 
   <router-outlet></router-outlet>

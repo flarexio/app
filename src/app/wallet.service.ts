@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, concatMap, map } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-import { 
-  CredentialCreationOptionsJSON, CredentialRequestOptionsJSON, 
-  create, get, 
-} from "@github/webauthn-json";
-
-import { environment as env } from '../environments/environment';
-
+import { WalletMessage, WalletMessageResponse } from '@flarex/wallet-adapter';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Connection, PublicKey, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { 
   BaseMessageSignerWalletAdapter, SendTransactionOptions, SupportedTransactionVersions, 
@@ -17,11 +11,13 @@ import {
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 
+import { environment as env } from '../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class WalletService {
-  private baseURL = env.FLAREX_WALLET_BASEURL;
+  private baseURL = env.FLAREX_WALLET_BASEURL + '/wallet/v1';
 
   private _currentWallet: BaseMessageSignerWalletAdapter | undefined;
   private _walletChangeSubject = new BehaviorSubject<PublicKey | null>(null);
@@ -33,24 +29,54 @@ export class WalletService {
     new SolflareWalletAdapter,
   ];
 
-  constructor(
-    private http: HttpClient,
-  ) { }
+  createSession(msg: WalletMessage): Observable<string | WalletMessageResponse> {
+    return new Observable((subscriber) => {
+      const ctrl = new AbortController();
 
-  registerPasskey(user_id: string, username: string): Observable<string> {
-    return this.http.post(`${this.baseURL}/passkeys/registration/initialize`, { user_id, username }).pipe(
-      concatMap((opts) => create(opts as CredentialCreationOptionsJSON)),
-      concatMap((credential) => this.http.post(`${this.baseURL}/passkeys/registration/finalize`, credential)),
-      map((token) => token as string),
-    );
-  }
+      const bytes = msg.serialize();
+      const data = Buffer.from(bytes).toString('base64');
 
-  loginWithPasskey(user_id: string): Observable<string> {
-    return this.http.post(`${this.baseURL}/passkeys/login/initialize`, { user_id }).pipe(
-      concatMap((opts) => get(opts as CredentialRequestOptionsJSON)),
-      concatMap((credential) => this.http.post(`${this.baseURL}/passkeys/login/finalize`, credential)),
-      map((token) => token as string),
-    );
+      fetchEventSource(`${this.baseURL}/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data }),
+        signal: ctrl.signal,
+        openWhenHidden: true,
+
+        onmessage: (event) => {
+          switch (event.event) {
+            case 'session':
+              subscriber.next(event.data);
+              return;
+
+            case 'data':
+              const data = Buffer.from(event.data, 'base64').toString('utf8');
+              const resp = WalletMessageResponse.deserialize(data);
+
+              subscriber.next(resp);
+              subscriber.complete();
+              return;
+
+            case 'fail':
+              subscriber.error(event.data);
+              return;
+          }
+        },
+        onerror: (err) => {
+          subscriber.error(err);
+        },
+        onclose: () => {
+          subscriber.error('session closed');
+        },
+      });
+
+      return () => {
+        ctrl.abort();
+        console.log('aborted');
+      };
+    });
   }
 
   public autoConnect(name: string) {

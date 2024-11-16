@@ -122,13 +122,13 @@ export class AppComponent {
     if (event.data == 'WALLET_READY') {
       if (this.todo == undefined) return;
 
-      this.walletWindow?.postMessage(this.todo, 'https://wallet.flarex.io');
+      this.walletWindow?.postMessage(this.todo.serialize(), 'https://wallet.flarex.io');
       this.todo = undefined;
       return;
     }
 
     // sign message
-    const msg = event.data as WalletMessageResponse;
+    const msg = WalletMessageResponse.deserialize(event.data);
     if (msg.type == WalletMessageType.SIGN_MESSAGE) {
       if (!msg.success) {
         this.signedResult = msg.error ?? 'unknown error';
@@ -164,22 +164,60 @@ export class AppComponent {
   }
 
   signMessage(message: string) {
-    if (this.walletWindow == null) {
-      this.openWindow();
-    }
+    this.openWindow();
 
-    const payload: SignMessagePayload = {
-      msg: new TextEncoder().encode(message),
-    };
+    const payload = new SignMessagePayload(new TextEncoder().encode(message));
 
-    const msg: WalletMessage = {
-      id: uuid(),
-      origin: 'https://app.flarex.io',
-      type: WalletMessageType.SIGN_MESSAGE,
+    const msg = new WalletMessage(
+      uuid(),
+      WalletMessageType.SIGN_MESSAGE,
+      'https://app.flarex.io',
       payload,
-    };
+    );
 
     this.todo = msg;
+  }
+
+  signMessageV2(message: string) {
+    const payload = new SignMessagePayload(new TextEncoder().encode(message));
+
+    const msg = new WalletMessage(
+      uuid(),
+      WalletMessageType.SIGN_MESSAGE,
+      'https://app.flarex.io',
+      payload,
+    );
+
+    this.walletService.createSession(msg).subscribe({
+      next: (resp) => {
+        if (resp instanceof WalletMessageResponse) {
+          // sign message
+          const msg = resp;
+          if (msg.type == WalletMessageType.SIGN_MESSAGE) {
+            if (!msg.success) {
+              this.signedResult = msg.error ?? 'unknown error';
+              return;
+            }
+
+            const payload = msg.payload as SignMessagePayload;
+            const bytes = payload.sig;
+            if (bytes == undefined) {
+              this.signedResult = 'no signature';
+              return;
+            }
+
+            const based58 = base58.encode(bytes);
+            this.signedResult = based58;
+          }
+        } else {
+          const session = resp as string;
+          const url = `web+flarex://wallet?session=${session}`;
+          window.location.href = url;
+        }
+      },
+      error: (err) => console.error(err),
+      complete: () => console.log('complete'),
+    });
   }
 
   openWalletBottomSheet() {
