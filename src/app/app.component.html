@@ -88,18 +88,15 @@
     </mat-toolbar>
   </header>
 
-  <button mat-button (click)="openWindow()">Open Window</button>
-
   <div class="sign-message">
-    <mat-form-field>
+    <mat-form-field appearance="outline">
       <mat-label>Message</mat-label>
       <input matInput #message>
     </mat-form-field>
-    <button mat-button (click)="signMessage(message.value)">Sign Message</button>
-    <button mat-button (click)="signMessageV2(message.value)">Sign MessageV2</button>
-    <pre style="white-space: pre-wrap; word-wrap: break-word;">
-      {{ signedResult }}
-    </pre>
+    <div>
+      <button mat-button (click)="signMessage(message.value)">Sign Message</button>
+      <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ signedResult }}</pre>
+    </div>
   </div>
 
   <router-outlet></router-outlet>

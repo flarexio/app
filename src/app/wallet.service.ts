@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { WalletMessage, WalletMessageResponse } from '@flarex/wallet-adapter';
+import { WalletMessage, WalletMessageResponse, FlarexWalletAdapter } from '@flarex/wallet-adapter';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Connection, PublicKey, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { 
@@ -25,8 +25,9 @@ export class WalletService {
   walletChange = this._walletChangeSubject.asObservable();
 
   wallets: BaseMessageSignerWalletAdapter[] = [
-    new PhantomWalletAdapter,
-    new SolflareWalletAdapter,
+    new FlarexWalletAdapter(),
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
   ];
 
   createSession(msg: WalletMessage): Observable<string | WalletMessageResponse> {
@@ -74,7 +75,6 @@ export class WalletService {
 
       return () => {
         ctrl.abort();
-        console.log('aborted');
       };
     });
   }

@@ -16,7 +16,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { 
-  SignMessagePayload, 
+  SignMessagePayload, FlarexWallet, 
   WalletMessage, WalletMessageType, WalletMessageResponse,
 } from '@flarex/wallet-adapter';
 import { Connection } from '@solana/web3.js';
@@ -109,73 +109,17 @@ export class AppComponent {
     this.width = window.innerWidth;
   }
 
-  private walletWindow: WindowProxy | null = null;
-  private todo: WalletMessage | undefined;
-
-  @HostListener('window:message', ['$event'])
-  messageHandler(event: MessageEvent) {
-    console.log(event);
-
-    if (event.origin != 'https://wallet.flarex.io') return;
-
-    // wallet is ready
-    if (event.data == 'WALLET_READY') {
-      if (this.todo == undefined) return;
-
-      this.walletWindow?.postMessage(this.todo.serialize(), 'https://wallet.flarex.io');
-      this.todo = undefined;
+  async signMessage(message: string) {
+    const wallet = this.currentWallet;
+    if (wallet == undefined) {
+      console.error('no wallet');
       return;
     }
 
-    // sign message
-    const msg = WalletMessageResponse.deserialize(event.data);
-    if (msg.type == WalletMessageType.SIGN_MESSAGE) {
-      if (!msg.success) {
-        this.signedResult = msg.error ?? 'unknown error';
-        return;
-      }
+    const msg = new TextEncoder().encode(message);
+    const sig = await wallet.signMessage(msg);
 
-      const payload = msg.payload as SignMessagePayload;
-      const bytes = payload.sig;
-      if (bytes == undefined) {
-        this.signedResult = 'no signature';
-        return;
-      }
-
-      const based58 = base58.encode(bytes);
-      this.signedResult = based58;
-    }
-  }
-
-  openWindow() {
-    const width = 440;
-    const height = 700;
-    const left = window.screenX + window.outerWidth - 10;
-    const top = window.screenY;
-
-    this.walletWindow = window.open('https://wallet.flarex.io', 'wallet', 
-      `width=${width},height=${height},top=${top},left=${left}`);
-
-    setInterval(() => {
-      if (this.todo == undefined) return;
-
-      this.walletWindow?.postMessage('IS_READY', 'https://wallet.flarex.io');
-    }, 1000);
-  }
-
-  signMessage(message: string) {
-    this.openWindow();
-
-    const payload = new SignMessagePayload(new TextEncoder().encode(message));
-
-    const msg = new WalletMessage(
-      uuid(),
-      WalletMessageType.SIGN_MESSAGE,
-      'https://app.flarex.io',
-      payload,
-    );
-
-    this.todo = msg;
+    this.signedResult = base58.encode(sig);
   }
 
   signMessageV2(message: string) {
