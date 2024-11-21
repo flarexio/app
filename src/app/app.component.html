@@ -21,6 +21,10 @@
         <mat-icon matListItemIcon>stores</mat-icon>
         <div matListItemTitle>Marketplace</div>
       </mat-list-item>
+      <mat-list-item (click)="switchRouter('/toolkit')">
+        <mat-icon matListItemIcon>handyman</mat-icon>
+        <div matListItemTitle>Toolkit</div>
+      </mat-list-item>
     </mat-nav-list>
   </mat-drawer>
 
@@ -87,17 +91,6 @@
     }
     </mat-toolbar>
   </header>
-
-  <div class="sign-message">
-    <mat-form-field appearance="outline">
-      <mat-label>Message</mat-label>
-      <input matInput #message>
-    </mat-form-field>
-    <div>
-      <button mat-button (click)="signMessage(message.value)">Sign Message</button>
-      <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ signedResult }}</pre>
-    </div>
-  </div>
 
   <router-outlet></router-outlet>
 </mat-drawer-container>

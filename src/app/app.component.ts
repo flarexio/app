@@ -15,14 +15,8 @@ import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { 
-  SignMessagePayload, FlarexWallet, 
-  WalletMessage, WalletMessageType, WalletMessageResponse,
-} from '@flarex/wallet-adapter';
 import { Connection } from '@solana/web3.js';
 import { BaseMessageSignerWalletAdapter, WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { v4 as uuid } from 'uuid';
-import * as base58 from 'bs58';
 
 import { SolanaService } from './solana.service';
 import { WalletService } from './wallet.service';
@@ -98,70 +92,15 @@ export class AppComponent {
       share(),
     );
 
-    // const defaultWallet = localStorage.getItem("default_wallet");
-    // if (defaultWallet != null && defaultWallet != '') {
-    //   this.walletService.autoConnect(defaultWallet);
-    // }
+    const defaultWallet = localStorage.getItem("default_wallet");
+    if (defaultWallet != null && defaultWallet != '') {
+      this.walletService.autoConnect(defaultWallet);
+    }
   }
 
   @HostListener('window:resize', ['$event'])
   windowResizeHandler() {
     this.width = window.innerWidth;
-  }
-
-  async signMessage(message: string) {
-    const wallet = this.currentWallet;
-    if (wallet == undefined) {
-      console.error('no wallet');
-      return;
-    }
-
-    const msg = new TextEncoder().encode(message);
-    const sig = await wallet.signMessage(msg);
-
-    this.signedResult = base58.encode(sig);
-  }
-
-  signMessageV2(message: string) {
-    const payload = new SignMessagePayload(new TextEncoder().encode(message));
-
-    const msg = new WalletMessage(
-      uuid(),
-      WalletMessageType.SIGN_MESSAGE,
-      'https://app.flarex.io',
-      payload,
-    );
-
-    this.walletService.createSession(msg).subscribe({
-      next: (resp) => {
-        if (resp instanceof WalletMessageResponse) {
-          // sign message
-          const msg = resp;
-          if (msg.type == WalletMessageType.SIGN_MESSAGE) {
-            if (!msg.success) {
-              this.signedResult = msg.error ?? 'unknown error';
-              return;
-            }
-
-            const payload = msg.payload as SignMessagePayload;
-            const bytes = payload.sig;
-            if (bytes == undefined) {
-              this.signedResult = 'no signature';
-              return;
-            }
-
-            const based58 = base58.encode(bytes);
-            this.signedResult = based58;
-          }
-        } else {
-          const session = resp as string;
-          const url = `web+flarex://wallet?session=${session}`;
-          window.location.href = url;
-        }
-      },
-      error: (err) => console.error(err),
-      complete: () => console.log('complete'),
-    });
   }
 
   openWalletBottomSheet() {

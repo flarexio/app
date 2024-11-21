@@ -6,7 +6,7 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Connection, PublicKey, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { 
   BaseMessageSignerWalletAdapter, SendTransactionOptions, SupportedTransactionVersions, 
-  TransactionOrVersionedTransaction, WalletConnectionError, 
+  TransactionOrVersionedTransaction, WalletReadyState,
 } from '@solana/wallet-adapter-base';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
@@ -85,11 +85,15 @@ export class WalletService {
         continue;
       }
 
-      wallet.autoConnect()
-            .then(() => this.currentWallet = wallet)
-            .catch((err: WalletConnectionError) => 
-              console.error(err.error)
-            );
+      wallet.on('readyStateChange', (state) => {
+        if (state == WalletReadyState.Installed) {
+          wallet.autoConnect().then(() => {
+            this.currentWallet = wallet;
+          }).catch((err) => {
+            console.error(err);
+          });
+        }
+      });
     }
   }
 
@@ -116,13 +120,13 @@ export class WalletService {
       this._currentWallet = undefined;
     }
 
-    this._currentWallet = value;
-
     const wallet = value;
     if (wallet == undefined) return;
 
     const pubkey = wallet.publicKey;
     if (pubkey == null) return;
+
+    this._currentWallet = value;
 
     wallet.addListener('connect', 
       (pubkey) => this.refreshWallet(pubkey)

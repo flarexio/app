@@ -133,7 +133,7 @@ export class EdgeComponent {
         authority: wallet.publicKey,
         account: natsPDA,
       })
-      .rpc()
+      .rpc();
 
     this.snackBar.openFromComponent(TransactionSnackbarComponent, {
       data: {
