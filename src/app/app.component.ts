@@ -54,8 +54,6 @@ export class AppComponent {
   getAccount: Observable<string | undefined>;
   getBalance: Observable<number | undefined>;
 
-  signedResult = '';
-
   @ViewChild(MatDrawer) drawer: MatDrawer | undefined;
 
   constructor(
@@ -142,6 +140,13 @@ export class AppComponent {
     return account.endsWith(".sol");
   }
 
+  retryOperation() {
+    const flarexWallet = this.walletService.flarexWallet;
+    if (flarexWallet == null) return;
+
+    flarexWallet.retryOperation();
+  }
+
   public get selectedNetwork(): WalletAdapterNetwork {
     return this.solService.network;
   }
@@ -167,5 +172,9 @@ export class AppComponent {
 
   public get connection(): Connection {
     return this.solService.connection;
+  }
+
+  public get retryRequest(): string | undefined {
+    return this.walletService.flarexWallet?.requestRetry;
   }
 }

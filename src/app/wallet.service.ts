@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { WalletMessage, WalletMessageResponse, FlarexWalletAdapter } from '@flarex/wallet-adapter';
+import { WalletMessage, WalletMessageResponse, FlarexWalletAdapter, FlarexWallet } from '@flarex/wallet-adapter';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Connection, PublicKey, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { 
@@ -29,6 +29,15 @@ export class WalletService {
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter(),
   ];
+
+  flarexWallet: FlarexWallet | null = null;
+
+  constructor() {
+    const adapter = this.wallets[0];
+    if (adapter instanceof FlarexWalletAdapter) {
+      this.flarexWallet = adapter.wallet;
+    }
+  }
 
   createSession(msg: WalletMessage): Observable<string | WalletMessageResponse> {
     return new Observable((subscriber) => {

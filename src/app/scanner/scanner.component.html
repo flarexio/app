@@ -12,11 +12,7 @@
         [formats]="allowedFormats"
         [(device)]="currentDevice"
         (camerasFound)="camerasFoundHandler($event)" 
-        (scanSuccess)="scanSuccessHandler($event)" 
-      ></zxing-scanner>
+        (scanSuccess)="scanSuccessHandler($event)"></zxing-scanner>
     </mat-card-content>
-    <mat-card-footer>
-      {{ result }}
-    </mat-card-footer>
   </mat-card>
 </div>

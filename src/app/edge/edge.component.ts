@@ -128,7 +128,7 @@ export class EdgeComponent {
     ], program.programId);
 
     const tx = await program.methods
-      .resetNatsAccount(0)
+      .setupNatsAccount()
       .accounts({
         authority: wallet.publicKey,
         account: natsPDA,

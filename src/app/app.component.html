@@ -93,4 +93,12 @@
   </header>
 
   <router-outlet></router-outlet>
+
+@if (retryRequest) {
+  <button mat-flat-button class="overlay-button" 
+          (click)="retryOperation()">
+    <mat-icon>check</mat-icon>
+    {{ retryRequest }}
+  </button>
+}
 </mat-drawer-container>
