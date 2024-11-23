@@ -1,6 +1,6 @@
 <div class="scanner">
   <mat-card appearance="outlined">
-    <mat-form-field>
+    <mat-form-field appearance="outline">
       <mat-select [(value)]="currentDevice">
       @for (device of availableDevices; track device) {
         <mat-option [value]="device">{{ device.label }}</mat-option>

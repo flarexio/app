@@ -147,6 +147,13 @@ export class AppComponent {
     flarexWallet.retryOperation();
   }
 
+  cancelOperation() {
+    const flarexWallet = this.walletService.flarexWallet;
+    if (flarexWallet == null) return;
+
+    flarexWallet.cancelOperation();
+  }
+
   public get selectedNetwork(): WalletAdapterNetwork {
     return this.solService.network;
   }
@@ -175,6 +182,9 @@ export class AppComponent {
   }
 
   public get retryRequest(): string | undefined {
-    return this.walletService.flarexWallet?.requestRetry;
+    const flarexWallet = this.walletService.flarexWallet;
+    if (flarexWallet == null) return undefined;
+
+    return flarexWallet.requestRetry;
   }
 }
