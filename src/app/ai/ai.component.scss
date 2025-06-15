@@ -86,32 +86,69 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
   }
-  
-  .app-id {
-    font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: 'Monaco', 'Menlo', monospace;
-  }
 }
 
 .selected-app-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   margin-top: 12px;
-  padding: 12px;
-  background: rgba(76, 175, 80, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.08) 0%, rgba(76, 175, 80, 0.12) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(76, 175, 80, 0.25);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(76, 175, 80, 0.16) 100%);
+    border-color: rgba(76, 175, 80, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+  }
   
   mat-icon {
     color: #4caf50;
-    font-size: 18px;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    background: rgba(76, 175, 80, 0.15);
+    border-radius: 50%;
+    padding: 8px;
+    margin: -4px 0;
   }
   
-  span {
-    color: #4caf50;
-    font-weight: 500;
+  .app-details {
+    flex: 1;
+    
+    .app-name {
+      color: #4caf50;
+      font-weight: 600;
+      font-size: 0.95em;
+      line-height: 1.4;
+      letter-spacing: 0.25px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      /* 分離名稱和ID的樣式 */
+      .app-title {
+        color: #4caf50;
+        font-weight: 600;
+      }
+      
+      .app-id-part {
+        color: rgba(76, 175, 80, 0.8);
+        font-weight: 400;
+        font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+        font-size: 0.85em;
+        background: rgba(76, 175, 80, 0.1);
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(76, 175, 80, 0.2);
+      }
+    }
   }
 }
 

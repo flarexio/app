@@ -32,12 +32,11 @@
       <mat-card-content>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Application</mat-label>
-          <mat-select [(value)]="selectedApp" (selectionChange)="appSelectedHandler($event)">
+          <mat-select [(value)]="selectedApp">
             @for (app of apps | async; track app) {
               <mat-option [value]="app">
                 <div class="app-option">
                   <span class="app-name">{{ app.name }}</span>
-                  <span class="app-id">{{ app.id }}</span>
                 </div>
               </mat-option>
             }
@@ -47,7 +46,12 @@
         @if (selectedApp) {
           <div class="selected-app-info">
             <mat-icon>check_circle</mat-icon>
-            <span>{{ selectedApp.name }} selected</span>
+            <div class="app-details">
+              <div class="app-name">
+                <span class="app-title">{{ selectedApp.name }}</span>
+                <span class="app-id-part">{{ selectedApp.id }}</span>
+              </div>
+            </div>
           </div>
         }
       </mat-card-content>

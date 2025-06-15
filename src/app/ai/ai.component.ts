@@ -61,10 +61,6 @@ export class AIComponent implements AfterViewChecked {
     }
   }
 
-  appSelectedHandler($event: any) {
-    // Placeholder for future functionality
-  }
-
   openSession() {
     setTimeout(() => {
       const chatElement = document.querySelector('.chat-layout');
