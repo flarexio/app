@@ -1,3 +1,67 @@
+<header>
+  <mat-toolbar id="toolbar" color="primary">
+  @if (width < 1024) {
+    <button mat-icon-button (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
+
+    <a (click)="switchRouter('/')">Flare<span class="span-title">X</span></a>
+    <div class="spacer"></div>
+
+  @if (currentWallet == undefined) {
+    <button mat-button extended (click)="openWalletBottomSheet()">
+      <mat-icon>account_balance_wallet</mat-icon>
+      Connect Wallet
+    </button>
+  } @else {
+    @if (getAccount | async; as account) {
+      <button mat-mini-fab [matMenuTriggerFor]="menu" 
+              matTooltip="{{ account }}">
+        @if (isDomain(account)) {
+          {{ account | slice: 0: -4 }}
+        } @else {
+          {{ account | slice: 0 : 1 }}
+        }
+      </button>
+    }
+
+    <mat-menu #menu="matMenu">
+      <mat-form-field>
+        <mat-label>Switch network</mat-label>
+        <mat-select [(value)]="selectedNetwork">
+        @for (network of networks; track network) {
+          <mat-option [value]="network.value">
+            {{ network.key }}
+            @if (selectedNetwork == network.value) {
+              {{ getBalance | async | currency: '◎' }}
+            }
+          </mat-option>
+        }
+        </mat-select>
+      @if (connection == undefined) {
+        <mat-icon matSuffix>cloud_off</mat-icon>
+      } @else {
+        <mat-icon matSuffix>cloud_done</mat-icon>
+      }
+      </mat-form-field>
+      <button mat-menu-item (click)="openWalletBottomSheet()">
+        <mat-icon>wallet</mat-icon>
+        <span>Switch Wallet</span>
+      </button>
+      <button mat-menu-item (click)="switchRouter('/scan')">
+        <mat-icon>qr_code_scanner</mat-icon>
+        <span>QR Scanner</span>
+      </button>
+      <button mat-menu-item (click)="disconnect()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  }
+  </mat-toolbar>
+</header>
+
 <mat-drawer-container fullscreen>
   <mat-drawer #drawer id="menu-sidenav"
               [mode]="(width >= 1024) ? 'side' : 'over'"
@@ -7,15 +71,17 @@
         <mat-icon matListItemIcon>devices</mat-icon>
         <div matListItemTitle>Edge Devices</div>
       </mat-list-item>
+      <mat-list-item (click)="switchRouter('/ai')">
+        <mat-icon matListItemIcon>auto_awesome</mat-icon>
+        <div matListItemTitle>AI</div>
+      </mat-list-item>
+      <mat-list-item (click)="switchRouter('/iiot')">
+        <mat-icon matListItemIcon>precision_manufacturing</mat-icon>
+        <div matListItemTitle>IIoT</div>
+      </mat-list-item>
       <mat-list-item (click)="switchRouter('/game')">
         <mat-icon matListItemIcon>sports_esports</mat-icon>
         <div matListItemTitle>Game</div>
-      </mat-list-item>
-      <mat-list-item (click)="switchRouter('/ollama')">
-        <mat-icon matListItemIcon>
-          <img src="https://ollama.com/public/icon-32x32.png" width="24px" height="24px">
-        </mat-icon>
-        <div matListItemTitle>Ollama</div>
       </mat-list-item>
       <mat-list-item>
         <mat-icon matListItemIcon>stores</mat-icon>
@@ -28,71 +94,9 @@
     </mat-nav-list>
   </mat-drawer>
 
-  <header>
-    <mat-toolbar id="toolbar" color="primary">
-    @if (width < 1024) {
-      <button mat-icon-button (click)="drawer.toggle()">
-        <mat-icon>menu</mat-icon>
-      </button>
-    }
-
-      <a (click)="switchRouter('/')">Flare<span class="span-title">X</span></a>
-      <div class="spacer"></div>
-
-    @if (currentWallet == undefined) {
-      <button mat-button extended (click)="openWalletBottomSheet()">
-        <mat-icon>account_balance_wallet</mat-icon>
-        Connect Wallet
-      </button>
-    } @else {
-      @if (getAccount | async; as account) {
-        <button mat-mini-fab [matMenuTriggerFor]="menu" 
-                matTooltip="{{ account }}">
-          @if (isDomain(account)) {
-            {{ account | slice: 0: -4 }}
-          } @else {
-            {{ account | slice: 0 : 1 }}
-          }
-        </button>
-      }
-
-      <mat-menu #menu="matMenu">
-        <mat-form-field>
-          <mat-label>Switch network</mat-label>
-          <mat-select [(value)]="selectedNetwork">
-          @for (network of networks; track network) {
-            <mat-option [value]="network.value">
-              {{ network.key }}
-              @if (selectedNetwork == network.value) {
-                {{ getBalance | async | currency: '◎' }}
-              }
-            </mat-option>
-          }
-          </mat-select>
-        @if (connection == undefined) {
-          <mat-icon matSuffix>cloud_off</mat-icon>
-        } @else {
-          <mat-icon matSuffix>cloud_done</mat-icon>
-        }
-        </mat-form-field>
-        <button mat-menu-item (click)="openWalletBottomSheet()">
-          <mat-icon>wallet</mat-icon>
-          <span>Switch Wallet</span>
-        </button>
-        <button mat-menu-item (click)="switchRouter('/scan')">
-          <mat-icon>qr_code_scanner</mat-icon>
-          <span>QR Scanner</span>
-        </button>
-        <button mat-menu-item (click)="disconnect()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    }
-    </mat-toolbar>
-  </header>
-
-  <router-outlet></router-outlet>
+  <mat-drawer-content>
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
 
 @if (retryRequest) {
   <div class="overlay-container">

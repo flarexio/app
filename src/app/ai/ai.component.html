@@ -1,0 +1,244 @@
+<div class="ai-container" [class.compact]="messages.length > 0">
+
+@if (!isNatsConnected) {
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>No Connected</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>To establish a NATS connection, you need to sign a certificate with your wallet.</p>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <mat-card appearance="outlined" [class.compact]="messages.length > 0">
+    <mat-accordion>
+      <mat-expansion-panel [expanded]="step() === 0" (opened)="setStep(0)" hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title> Select App </mat-panel-title>
+          <mat-panel-description>
+          @if (selectedApp == undefined) {
+            Choose an AI app
+          } @else {
+            {{ selectedApp.name }}
+          }
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <mat-form-field appearance="outline">
+          <mat-label>App</mat-label>
+          <mat-select [(value)]="selectedApp" 
+                      (selectionChange)="appSelectedHandler($event)">
+          @for (app of apps | async; track app) {
+            <mat-option [value]="app">{{ app.name }}</mat-option>
+          }
+          </mat-select>
+        </mat-form-field>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel [expanded]="step() === 1" (opened)="setStep(1)">
+        <mat-expansion-panel-header>
+          <mat-panel-title> Context </mat-panel-title>
+          <mat-panel-description>
+          @if (sessionID == undefined) {
+            Set app context
+          } @else {
+            {{ context }}
+          }
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <div class="context-fields">
+          <div class="session-field">
+            <mat-form-field appearance="outline">
+              <mat-label>Session ID</mat-label>
+              <input matInput type="text" placeholder="Enter Session ID" [(ngModel)]="sessionID">
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="createSession()">Generate</button>
+          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>User ID</mat-label>
+            <input matInput type="text" placeholder="Enter User ID" [(ngModel)]="userID">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Customer ID</mat-label>
+            <input matInput type="text" placeholder="Enter Customer ID" [(ngModel)]="customerID">
+          </mat-form-field>
+          <mat-action-row>
+            <button mat-raised-button color="primary" (click)="prevStep()">Previous</button>
+            <button mat-raised-button color="primary" (click)="openSession()">Open</button>
+          </mat-action-row>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-card>
+
+  <div class="chat-layout" [class.expanded]="messages.length > 0">
+    <mat-card appearance="outlined" class="chat-card" [class.expanded]="messages.length > 0">
+      <div #chatContainer class="chat-messages-container">
+        @for (message of messages; track message) {
+          @if (message.role === 'human') {
+            <div class="chat-message right">
+              <div class="message-wrapper user-message">
+                <pre>{{ message.display | async }}</pre>
+              </div>
+            </div>
+          }
+
+          @if (message.role == 'ai') {
+            <div class="chat-message left">
+              <div class="message-wrapper ai-message" [class.collapsed]="message.isCollapsed">
+                
+                <div class="message-header" (click)="toggleMessageCollapse(message)">
+                  <div class="message-meta">
+                    <span class="role-badge ai">🤖 AI</span>
+                    
+                    @if (message.nodes.length > 0) {
+                      <span class="node-badge">{{ message.nodes.length }} nodes</span>
+                    }
+
+                    @if (message.tool_calls && message.tool_calls.length > 0) {
+                      <span class="tool-badge">{{ message.tool_calls.length }} tools</span>
+                    }
+                    
+                    @if (message.cleanContent.length > 200) {
+                      <span class="length-badge">{{ message.cleanContent.length }} chars</span>
+                    }
+                  </div>
+                  <button mat-icon-button class="collapse-btn">
+                    <mat-icon>{{ message.isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+                  </button>
+                </div>
+
+                @if (message.isCollapsed) {
+                  <div class="message-summary">
+                    <pre>{{ message.summary }}</pre>
+                  </div>
+                } @else {
+                  
+                  @if (message.tool_calls && message.tool_calls.length > 0) {
+                    <div class="tool-calls-section">
+                      @for (toolCall of message.tool_calls; track toolCall.id) {
+                        <div class="tool-call-item" [attr.data-status]="toolCall.status || 'completed'">
+                          <div class="tool-call-header">
+                            <div class="tool-call-info">
+                              <mat-icon class="tool-icon">settings</mat-icon>
+                              <span class="tool-name">{{ toolCall.name || 'Unknown Tool' }}</span>
+                              <span class="tool-id">({{ (toolCall.id || '').slice(0, 8) }}{{ toolCall.id && toolCall.id.length > 8 ? '...' : '' }})</span>
+                            </div>
+                            <div class="tool-status">
+                              @switch (toolCall.status || 'completed') {
+                                @case ('pending') {
+                                  <mat-icon class="status-icon pending">schedule</mat-icon>
+                                }
+                                @case ('running') {
+                                  <mat-icon class="status-icon running">sync</mat-icon>
+                                }
+                                @case ('completed') {
+                                  <mat-icon class="status-icon completed">check_circle</mat-icon>
+                                }
+                                @case ('error') {
+                                  <mat-icon class="status-icon error">error</mat-icon>
+                                }
+                                @default {
+                                  <mat-icon class="status-icon completed">check_circle</mat-icon>
+                                }
+                              }
+                            </div>
+                          </div>
+                          
+                          <div class="tool-details-toggle">
+                            <button mat-button class="details-btn" 
+                                    (click)="toggleToolDetails(message); $event.stopPropagation()">
+                              <mat-icon>{{ message.showToolCallDetails ? 'expand_less' : 'expand_more' }}</mat-icon>
+                              {{ message.showToolCallDetails ? 'Hide details' : 'Show details' }}
+                            </button>
+                          </div>
+                          
+                          @if (message.showToolCallDetails) {
+                            <div class="tool-call-details">
+                              <div class="tool-call-args">
+                                <div class="result-label">Arguments:</div>
+                                @if (toolCall.args) {
+                                  <pre>{{ message.formatJsonArgs(toolCall.args) }}</pre>
+                                } @else {
+                                  <pre class="empty-content">No arguments available</pre>
+                                }
+                              </div>
+                              
+                              <div class="tool-call-result">
+                                <div class="result-label">Result:</div>
+                                @if (toolCall.result) {
+                                  <pre>{{ message.formatJsonArgs(toolCall.result) }}</pre>
+                                } @else {
+                                  <pre class="empty-content">No result available</pre>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (message.nodes.length > 0) {
+                    <div class="execution-path">
+                      <div class="path-header">
+                        <mat-icon class="path-icon">account_tree</mat-icon>
+                        <span>Execution Path</span>
+                        <button mat-icon-button class="path-toggle" 
+                                (click)="toggleNodeDetails(message); $event.stopPropagation()">
+                          <mat-icon>{{ message.showNodeDetails ? 'expand_less' : 'expand_more' }}</mat-icon>
+                        </button>
+                      </div>
+                      @if (message.showNodeDetails) {
+                        <div class="path-content">
+                          @for (node of message.nodes; track node; let i = $index) {
+                            <div class="path-node">
+                              <span class="node-index">{{ i + 1 }}</span>
+                              <span class="node-name">{{ node }}</span>
+                              @if (i < message.nodes.length - 1) {
+                                <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+                              }
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div class="path-summary">
+                          {{ message.nodes.length }} nodes executed
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (message.cleanContent) {
+                    <div class="message-content">
+                      <pre>{{ message.cleanContent }}</pre>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </mat-card>
+
+    <div class="message-input-container">
+      <mat-form-field class="msg-form-field" appearance="outline">
+        <mat-label>Message</mat-label>
+        <input #msg matInput type="text" (keyup.enter)="sendMsg(msg)">
+        @if (msg.value) {
+          <button matSuffix mat-icon-button (click)="sendMsg(msg)">
+            <mat-icon>send</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="floating-loading-indicator">
+      <div class="loading-spinner"></div>
+      <span>AI is thinking...</span>
+    </div>
+  }
+}
+</div>
