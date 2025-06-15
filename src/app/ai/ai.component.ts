@@ -5,7 +5,6 @@ import { Observable, filter, map, switchMap } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -22,7 +21,6 @@ import { NatsService } from '../nats.service';
     FormsModule,
     MatButtonModule,
     MatCardModule,
-    MatExpansionModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -34,9 +32,6 @@ import { NatsService } from '../nats.service';
 export class AIComponent implements AfterViewChecked {
   @ViewChild('chatContainer')
   chatContainer!: ElementRef;
-
-  @ViewChild(MatAccordion)
-  accordion: MatAccordion | undefined;
 
   apps: Observable<AppInfo[] | undefined>;
   step = signal(0);
@@ -89,7 +84,20 @@ export class AIComponent implements AfterViewChecked {
   }
 
   openSession() {
-    this.accordion?.closeAll();
+    setTimeout(() => {
+      const chatElement = document.querySelector('.chat-layout');
+      if (chatElement) {
+        chatElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+    
+    // 聚焦到輸入框
+    setTimeout(() => {
+      const inputElement = document.querySelector('.message-input-container input') as HTMLInputElement;
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 300);
   }
 
   createSession() {

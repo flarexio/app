@@ -1,79 +1,144 @@
 <div class="ai-container" [class.compact]="messages.length > 0">
 
 @if (!isNatsConnected) {
-  <mat-card appearance="outlined">
+  <mat-card appearance="outlined" class="connection-card">
     <mat-card-header>
-      <mat-card-title>No Connected</mat-card-title>
+      <div mat-card-avatar>
+        <mat-icon class="connection-icon">cloud_off</mat-icon>
+      </div>
+      <mat-card-title>Connection Required</mat-card-title>
+      <mat-card-subtitle>NATS connection not established</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <p>To establish a NATS connection, you need to sign a certificate with your wallet.</p>
+      <button mat-raised-button color="primary">
+        <mat-icon>account_balance_wallet</mat-icon>
+        Connect Wallet
+      </button>
     </mat-card-content>
   </mat-card>
 } @else {
-  <mat-card appearance="outlined" [class.compact]="messages.length > 0">
-    <mat-accordion>
-      <mat-expansion-panel [expanded]="step() === 0" (opened)="setStep(0)" hideToggle>
-        <mat-expansion-panel-header>
-          <mat-panel-title> Select App </mat-panel-title>
-          <mat-panel-description>
-          @if (selectedApp == undefined) {
-            Choose an AI app
-          } @else {
-            {{ selectedApp.name }}
-          }
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-        <mat-form-field appearance="outline">
-          <mat-label>App</mat-label>
+  <!-- Setup Cards -->
+  <div class="setup-section" [class.hidden]="messages.length > 0">
+    <!-- App Selection Card -->
+    <mat-card appearance="outlined" class="setup-card">
+      <mat-card-header>
+        <div mat-card-avatar>
+          <mat-icon class="setup-icon">apps</mat-icon>
+        </div>
+        <mat-card-title>Select Application</mat-card-title>
+        <mat-card-subtitle>Choose an AI application to interact with</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Application</mat-label>
           <mat-select [(value)]="selectedApp" 
-                      (selectionChange)="appSelectedHandler($event)">
-          @for (app of apps | async; track app) {
-            <mat-option [value]="app">{{ app.name }}</mat-option>
-          }
+                      (selectionChange)="appSelectedHandler($event)"
+                      panelClass="app-select-panel">
+            @for (app of apps | async; track app) {
+              <mat-option [value]="app">
+                <div class="app-option">
+                  <span class="app-name">{{ app.name }}</span>
+                  <span class="app-id">{{ app.id }}</span>
+                </div>
+              </mat-option>
+            }
           </mat-select>
         </mat-form-field>
-      </mat-expansion-panel>
-
-      <mat-expansion-panel [expanded]="step() === 1" (opened)="setStep(1)">
-        <mat-expansion-panel-header>
-          <mat-panel-title> Context </mat-panel-title>
-          <mat-panel-description>
-          @if (sessionID == undefined) {
-            Set app context
-          } @else {
-            {{ context }}
-          }
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-        <div class="context-fields">
-          <div class="session-field">
-            <mat-form-field appearance="outline">
-              <mat-label>Session ID</mat-label>
-              <input matInput type="text" placeholder="Enter Session ID" [(ngModel)]="sessionID">
-            </mat-form-field>
-            <button mat-raised-button color="primary" (click)="createSession()">Generate</button>
+        
+        @if (selectedApp) {
+          <div class="selected-app-info">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ selectedApp.name }} selected</span>
           </div>
-          <mat-form-field appearance="outline">
-            <mat-label>User ID</mat-label>
-            <input matInput type="text" placeholder="Enter User ID" [(ngModel)]="userID">
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Customer ID</mat-label>
-            <input matInput type="text" placeholder="Enter Customer ID" [(ngModel)]="customerID">
-          </mat-form-field>
-          <mat-action-row>
-            <button mat-raised-button color="primary" (click)="prevStep()">Previous</button>
-            <button mat-raised-button color="primary" (click)="openSession()">Open</button>
-          </mat-action-row>
-        </div>
-      </mat-expansion-panel>
-    </mat-accordion>
-  </mat-card>
+        }
+      </mat-card-content>
+    </mat-card>
 
+    <!-- Context Configuration Card -->
+    <mat-card appearance="outlined" class="setup-card context-card" [class.disabled]="!selectedApp">
+      <mat-card-header>
+        <div mat-card-avatar>
+          <mat-icon class="setup-icon">settings</mat-icon>
+        </div>
+        <mat-card-title>Configure Context</mat-card-title>
+        <mat-card-subtitle>Set up your session and user context</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Session Configuration -->
+        <div class="config-section">
+          <h4>Session</h4>
+          <div class="session-config">
+            <mat-form-field appearance="outline" class="session-input">
+              <mat-label>Session ID</mat-label>
+              <input matInput 
+                     type="text" 
+                     placeholder="Auto-generated or custom" 
+                     [(ngModel)]="sessionID"
+                     [disabled]="!selectedApp">
+              <mat-icon matSuffix>key</mat-icon>
+            </mat-form-field>
+            <button mat-stroked-button 
+                    color="primary" 
+                    class="generate-btn"
+                    [disabled]="!selectedApp"
+                    (click)="createSession()">
+              <mat-icon>key</mat-icon>
+              Generate
+            </button>
+          </div>
+        </div>
+
+        <!-- User Context -->
+        <div class="config-section">
+          <h4>User Context <span class="optional">(Optional)</span></h4>
+          <div class="user-config">
+            <mat-form-field appearance="outline">
+              <mat-label>User ID</mat-label>
+              <input matInput 
+                     type="text" 
+                     placeholder="User identifier" 
+                     [(ngModel)]="userID"
+                     [disabled]="!selectedApp">
+              <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Customer ID</mat-label>
+              <input matInput 
+                     type="text" 
+                     placeholder="Customer identifier" 
+                     [(ngModel)]="customerID"
+                     [disabled]="!selectedApp">
+              <mat-icon matSuffix>business</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Ready Status -->
+        @if (selectedApp && sessionID) {
+          <div class="ready-status">
+            <mat-icon class="ready-icon">check_circle</mat-icon>
+            <span>Ready to start chat session</span>
+            <button mat-raised-button 
+                    color="primary" 
+                    class="start-chat-btn"
+                    (click)="openSession()">
+              <mat-icon>chat</mat-icon>
+              Start Chat
+            </button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Chat Section -->
   <div class="chat-layout" [class.expanded]="messages.length > 0">
     <mat-card appearance="outlined" class="chat-card" [class.expanded]="messages.length > 0">
       <div #chatContainer class="chat-messages-container">
         @for (message of messages; track message) {
+          <!-- 保持原有的訊息顯示邏輯 -->
           @if (message.role === 'human') {
             <div class="chat-message right">
               <div class="message-wrapper user-message">
@@ -180,11 +245,12 @@
 
                   @if (message.nodes.length > 0) {
                     <div class="execution-path">
-                      <div class="path-header">
-                        <mat-icon class="path-icon">account_tree</mat-icon>
-                        <span>Execution Path</span>
-                        <button mat-icon-button class="path-toggle" 
-                                (click)="toggleNodeDetails(message); $event.stopPropagation()">
+                      <div class="path-header" (click)="toggleNodeDetails(message); $event.stopPropagation()">
+                        <div class="path-info">
+                          <mat-icon class="path-icon">route</mat-icon>
+                          <span>{{ message.nodes.length }} step{{ message.nodes.length > 1 ? 's' : '' }}</span>
+                        </div>
+                        <button class="path-toggle">
                           <mat-icon>{{ message.showNodeDetails ? 'expand_less' : 'expand_more' }}</mat-icon>
                         </button>
                       </div>
@@ -193,16 +259,16 @@
                           @for (node of message.nodes; track node; let i = $index) {
                             <div class="path-node">
                               <span class="node-index">{{ i + 1 }}</span>
-                              <span class="node-name">{{ node }}</span>
-                              @if (i < message.nodes.length - 1) {
-                                <mat-icon class="arrow-icon">arrow_forward</mat-icon>
-                              }
+                              <span class="node-name" [title]="node">{{ node.split(':')[0] }}</span>
                             </div>
+                            @if (i < message.nodes.length - 1) {
+                              <mat-icon class="arrow-icon">arrow_forward_ios</mat-icon>
+                            }
                           }
                         </div>
                       } @else {
                         <div class="path-summary">
-                          {{ message.nodes.length }} nodes executed
+                          Executed through {{ message.nodes.length }} nodes
                         </div>
                       }
                     </div>
@@ -224,8 +290,11 @@
     <div class="message-input-container">
       <mat-form-field class="msg-form-field" appearance="outline">
         <mat-label>Message</mat-label>
-        <input #msg matInput type="text" (keyup.enter)="sendMsg(msg)">
-        @if (msg.value) {
+        <input #msg matInput type="text" 
+               [disabled]="!sessionID"
+               placeholder="Type your message..."
+               (keyup.enter)="sendMsg(msg)">
+        @if (msg.value && sessionID) {
           <button matSuffix mat-icon-button (click)="sendMsg(msg)">
             <mat-icon>send</mat-icon>
           </button>

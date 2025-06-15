@@ -13,84 +13,254 @@
   }
 }
 
-.context-fields {
+/* 連接狀態卡片 */
+.connection-card {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  
+  .connection-icon {
+    color: #f44336;
+  }
+  
+  mat-card-content {
+    padding: 16px;
+    
+    p {
+      margin-bottom: 16px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+/* 設置區域 */
+.setup-section {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+  
+  &.hidden {
+    display: none;
+  }
+}
+
+.setup-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  .setup-icon {
+    color: #2196f3;
+  }
+  
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+  
+  mat-card-content {
+    padding-top: 0;
+  }
+}
+
+/* 應用選擇樣式 */
+.full-width {
   width: 100%;
 }
 
-.context-fields .mat-mdc-form-field {
-  width: 100%;
+.app-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  .app-name {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .app-id {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Monaco', 'Menlo', monospace;
+  }
+}
+
+.selected-app-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  
+  mat-icon {
+    color: #4caf50;
+    font-size: 18px;
+  }
+  
+  span {
+    color: #4caf50;
+    font-weight: 500;
+  }
+}
+
+/* Context 介面樣式 */
+.context-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.context-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-header {
+  h4 {
+    margin: 0 0 4px 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+  }
 }
 
 .session-field {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-/* 設定區域樣式 */
-.ai-container > p {
-  margin-bottom: 20px;
-  font-size: 1.2em;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  gap: 12px;
+  align-items: flex-start; /* 改為 flex-start */
   
-  /* 當有訊息時縮小標題 */
-  &.compact {
-    margin-bottom: 5px;
-    margin-top: 0;
-    font-size: 0.9em;
+  .session-input {
+    flex: 1;
+  }
+  
+  .generate-btn {
+    height: 56px; /* 與 mat-form-field 高度對齊 */
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0; /* 確保沒有額外的 margin */
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  /* 確保 mat-form-field 和按鈕基線對齊 */
+  .mat-mdc-form-field {
+    margin-bottom: 0;
   }
 }
 
-.ai-container > mat-card {
-  margin-bottom: 30px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+.user-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
   
-  /* 當有訊息時大幅縮小設定區域並往上推 */
-  &.compact {
-    margin-bottom: 5px;
-    margin-top: 0;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.context-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  
+  &.active {
+    color: #4caf50;
     
-    .mat-expansion-panel {
-      .mat-expansion-panel-header {
-        height: 36px;
-        font-size: 0.85em;
-        
-        .mat-panel-title {
-          font-size: 0.9em;
-        }
-      }
-      
-      .mat-expansion-panel-body {
-        padding: 6px 12px;
-      }
-      
-      .mat-panel-description {
-        font-size: 0.75em;
-      }
+    mat-icon {
+      color: #4caf50;
     }
+  }
+  
+  &.inactive {
+    color: rgba(255, 255, 255, 0.5);
     
-    /* 縮小 form field */
-    .mat-mdc-form-field {
-      margin-bottom: 8px;
-      
-      .mat-mdc-text-field-wrapper {
-        height: 36px;
-      }
-      
-      .mat-mdc-form-field-label {
-        font-size: 0.9em;
-      }
+    mat-icon {
+      color: rgba(255, 255, 255, 0.3);
     }
+  }
+  
+  &.optional {
+    color: rgba(255, 255, 255, 0.7);
     
-    /* 縮小按鈕 */
-    button {
-      height: 32px;
-      font-size: 0.85em;
+    mat-icon {
+      color: #2196f3;
     }
+  }
+  
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.context-actions {
+  margin-top: 8px;
+  padding: 16px 0 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  
+  .action-spacer {
+    flex: 1;
+  }
+  
+  button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+/* Form field 客製化 */
+.context-fields .mat-mdc-form-field {
+  width: 100%;
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 4px;
   }
 }
 
@@ -605,6 +775,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  min-height: 52px; /* 確保有固定高度 */
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.08);
@@ -616,6 +787,7 @@
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1; /* 讓左側內容佔用剩餘空間 */
 }
 
 .role-badge, .node-badge, .tool-badge, .length-badge {
@@ -654,24 +826,49 @@
 }
 
 .collapse-btn {
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
   color: rgba(255, 255, 255, 0.7);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0;
+  
+  /* 覆蓋 Material 按鈕的默認樣式 */
+  &.mat-mdc-icon-button {
+    --mdc-icon-button-state-layer-size: 32px;
+    --mat-mdc-button-persistent-ripple-color: transparent;
+    --mat-mdc-button-ripple-color: rgba(255, 255, 255, 0.1);
+    line-height: 1 !important;
+  }
+
+  /* 移除按鈕的默認 touch target */
+  .mat-mdc-button-touch-target {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .mat-ripple {
+    border-radius: 50%;
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.2) !important;
     color: rgba(255, 255, 255, 0.9);
   }
 
   .mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    margin: 0 !important;
   }
 }
 
@@ -709,95 +906,107 @@
   }
 }
 
-/* Execution Path 樣式 */
+/* Execution Path 樣式 - 簡潔內聯設計 */
 .execution-path {
-  margin: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
+  margin: 0 16px 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
   overflow: hidden;
 }
 
 .path-header {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between; /* 添加這行確保兩端對齊 */
+  padding: 6px 0;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: opacity 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    opacity: 0.8;
+  }
+
+  .path-info {
+    display: flex;
+    align-items: center;
+    flex: 1; /* 讓左側內容佔用剩餘空間 */
   }
 
   .path-icon {
-    color: #4CAF50;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
     flex-shrink: 0;
   }
 
   span {
-    flex: 1;
-    color: #fff;
-    font-weight: 500;
-    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+    font-size: 0.7em;
     line-height: 1;
     display: flex;
     align-items: center;
   }
 
   .path-toggle {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
-    color: rgba(255, 255, 255, 0.7);
+    width: 20px;
+    height: 20px;
+    color: rgba(255, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0;
     padding: 0;
-    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     .mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+      line-height: 12px;
     }
   }
 }
 
 .path-content {
-  padding: 12px 16px;
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .path-node {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 4px;
+  padding: 2px 6px;
   background: rgba(76, 175, 80, 0.1);
-  border-radius: 4px;
-  border-left: 3px solid #4CAF50;
+  border-radius: 10px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  font-size: 0.65em;
+  white-space: nowrap;
 
   .node-index {
-    background: #4CAF50;
+    background: rgba(76, 175, 80, 0.8);
     color: white;
-    width: 24px;
-    height: 24px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -805,33 +1014,210 @@
     font-size: 0.8em;
     font-weight: 600;
     flex-shrink: 0;
+    line-height: 1;
   }
 
   .node-name {
-    color: #fff;
+    color: rgba(255, 255, 255, 0.8);
     font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.85em;
-    flex: 1;
+    font-size: 1em;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .arrow-icon {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    width: 10px;
+    height: 10px;
     flex-shrink: 0;
+    margin: 0 2px;
   }
 }
 
 .path-summary {
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85em;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.65em;
   font-style: italic;
+  margin: 0;
+  display: inline-block;
 }
 
-// 確保旋轉動畫已經定義
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Context Configuration 區域樣式 */
+.context-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  .setup-icon {
+    color: #2196f3;
+  }
+  
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+  
+  mat-card_content {
+    padding-top: 0;
+  }
+}
+
+/* 配置區段樣式 */
+.config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  
+  &:last-child {
+    margin-bottom: 16px;
+  }
+  
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .optional {
+      font-size: 0.75em;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+  }
+}
+
+/* Session 配置樣式 */
+.session-config {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  
+  .session-input {
+    flex: 1;
+  }
+  
+  .generate-btn {
+    height: 56px;
+    min-width: 110px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  /* 確保表單欄位和按鈕對齊 */
+  .mat-mdc-form-field {
+    margin-bottom: 0;
+  }
+}
+
+/* User Context 配置樣式 */
+.user-config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .mat-mdc-form-field {
+    margin-bottom: 0;
+  }
+}
+
+/* Ready Status 樣式 */
+.ready-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  margin-top: 8px;
+  
+  .ready-icon {
+    color: #4caf50;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  span {
+    color: #4caf50;
+    font-weight: 500;
+    flex: 1;
+  }
+  
+  .start-chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+/* Form Field 通用樣式 */
+.full-width,
+.session-input,
+.user-config .mat-mdc-form-field {
+  width: 100%;
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 4px;
+  }
+  
+  /* 自訂 outline 顏色 */
+  .mat-mdc-form-field-outline {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &.mat-focused .mat-mdc-form-field-outline {
+    color: #2196f3;
+  }
+}
+
+/* 輸入欄位圖示樣式 */
+.mat-mdc-form-field-suffix .mat-icon {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* 按鈕間距調整 */
+.generate-btn,
+.start-chat-btn {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 }
