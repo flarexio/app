@@ -45,12 +45,6 @@ export class AIComponent implements AfterViewChecked {
   currentMessage: Message | undefined = undefined;
   loading: boolean = false;
 
-  // 在組件中管理顯示狀態
-  messageStates = new Map<Message, {
-    showToolDetails: boolean;
-    showNodeDetails: boolean;
-  }>();
-
   constructor(
     private natsService: NatsService,
     private aiService: AIService,
@@ -67,20 +61,8 @@ export class AIComponent implements AfterViewChecked {
     }
   }
 
-  setStep(index: number) {
-    this.step.set(index);
-  }
-
-  nextStep() {
-    this.step.update(i => i + 1);
-  }
-
-  prevStep() {
-    this.step.update(i => i - 1);
-  }
-
   appSelectedHandler($event: any) {
-    this.nextStep();
+    // Placeholder for future functionality
   }
 
   openSession() {
@@ -91,7 +73,6 @@ export class AIComponent implements AfterViewChecked {
       }
     }, 100);
     
-    // 聚焦到輸入框
     setTimeout(() => {
       const inputElement = document.querySelector('.message-input-container input') as HTMLInputElement;
       if (inputElement) {
@@ -138,25 +119,6 @@ export class AIComponent implements AfterViewChecked {
     message.toggleNodeDetails();
   }
 
-  // 添加調試方法
-  debugMessage(message: Message) {
-    console.log('Message debug:', {
-      role: message.role,
-      hasToolCalls: message.tool_calls && message.tool_calls.length > 0,
-      toolCallsLength: message.tool_calls?.length,
-      showToolCallDetails: message.showToolCallDetails,
-      toolCalls: message.tool_calls
-    });
-  }
-
-  getToolDetailsState(message: Message): boolean {
-    return message.showToolCallDetails;
-  }
-
-  getNodeDetailsState(message: Message): boolean {
-    return message.showNodeDetails;
-  }
-
   toggleMessageCollapse(message: Message) {
     message.toggleCollapse();
   }
@@ -184,7 +146,6 @@ export class AIComponent implements AfterViewChecked {
     this.loading = true;
     this.currentMessage = undefined;
 
-    // 在這次請求的範圍內維護 tool_call 映射
     const messagesByToolCallID = new Map<string, Message>();
 
     this.aiService.sendMessage(ctx, content).pipe(
@@ -208,7 +169,6 @@ export class AIComponent implements AfterViewChecked {
           message.processChunk(chunk);
         }
 
-        // 針對 AI 角色：處理 tool_calls
         if (chunk.role === 'ai') {
           if (chunk.tool_calls && chunk.tool_calls.length > 0) {
             chunk.tool_calls.forEach(toolCall => {
@@ -219,8 +179,6 @@ export class AIComponent implements AfterViewChecked {
           }
         }
 
-        
-        // 針對 Tool 角色：處理 tool_call_id 對應的結果
         if (chunk.role === 'tool') {
           const toolMessage = chunk as { tool_call_id: string; content: string };
           const message = messagesByToolCallID.get(toolMessage.tool_call_id);

@@ -13,7 +13,7 @@
   }
 }
 
-/* 連接狀態卡片 */
+/* Connection status card */
 .connection-card {
   margin-bottom: 20px;
   border-radius: 12px;
@@ -38,7 +38,7 @@
   }
 }
 
-/* 設置區域 */
+/* Setup section */
 .setup-section {
   display: flex;
   flex-direction: column;
@@ -72,7 +72,7 @@
   }
 }
 
-/* 應用選擇樣式 */
+/* App selection */
 .full-width {
   width: 100%;
 }
@@ -115,52 +115,53 @@
   }
 }
 
-/* Context 介面樣式 */
-.context-fields {
+/* Context configuration */
+.config-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 16px 0;
-}
-
-.context-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.section-header {
+  gap: 16px;
+  margin-bottom: 24px;
+  
+  &:last-child {
+    margin-bottom: 16px;
+  }
+  
   h4 {
-    margin: 0 0 4px 0;
+    margin: 0 0 8px 0;
     font-size: 1.1em;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
-  }
-  
-  p {
-    margin: 0;
-    font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.6);
-    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .optional {
+      font-size: 0.75em;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
   }
 }
 
-.session-field {
+.session-config {
   display: flex;
   gap: 12px;
-  align-items: flex-start; /* 改為 flex-start */
+  align-items: flex-start;
   
   .session-input {
     flex: 1;
   }
   
   .generate-btn {
-    height: 56px; /* 與 mat-form-field 高度對齊 */
-    min-width: 100px;
+    height: 56px;
+    min-width: 110px;
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 0; /* 確保沒有額外的 margin */
+    white-space: nowrap;
     
     mat-icon {
       font-size: 18px;
@@ -169,13 +170,12 @@
     }
   }
   
-  /* 確保 mat-form-field 和按鈕基線對齊 */
   .mat-mdc-form-field {
     margin-bottom: 0;
   }
 }
 
-.user-fields {
+.user-config {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -184,65 +184,36 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
+  
+  .mat-mdc-form-field {
+    margin-bottom: 0;
+  }
 }
 
-.context-status {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.status-item {
+.ready-status {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9em;
-  
-  &.active {
-    color: #4caf50;
-    
-    mat-icon {
-      color: #4caf50;
-    }
-  }
-  
-  &.inactive {
-    color: rgba(255, 255, 255, 0.5);
-    
-    mat-icon {
-      color: rgba(255, 255, 255, 0.3);
-    }
-  }
-  
-  &.optional {
-    color: rgba(255, 255, 255, 0.7);
-    
-    mat-icon {
-      color: #2196f3;
-    }
-  }
-  
-  mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-  }
-}
-
-.context-actions {
+  gap: 12px;
+  padding: 16px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
   margin-top: 8px;
-  padding: 16px 0 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   
-  .action-spacer {
+  .ready-icon {
+    color: #4caf50;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  span {
+    color: #4caf50;
+    font-weight: 500;
     flex: 1;
   }
   
-  button {
+  .start-chat-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -255,32 +226,21 @@
   }
 }
 
-/* Form field 客製化 */
-.context-fields .mat-mdc-form-field {
-  width: 100%;
-  
-  .mat-mdc-form-field-subscript-wrapper {
-    margin-top: 4px;
-  }
-}
-
+/* Chat layout */
 .chat-layout {
   display: flex;
   flex-direction: column;
-  /* 預設較小的聊天區域 */
   height: calc(100vh - 400px);
   min-height: 300px;
   position: relative;
   margin-top: 20px;
   transition: all 0.3s ease;
   
-  /* 當有訊息時大幅擴展聊天區域 */
   &.expanded {
-    height: calc(100vh - 200px); /* 大幅增加高度 */
+    height: calc(100vh - 200px);
     margin-top: 5px;
   }
   
-  /* 添加分隔線效果 */
   &::before {
     content: '';
     position: absolute;
@@ -302,28 +262,20 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  margin-bottom: 0; /* 移除底部間距 */
+  margin-bottom: 0;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  /* 確保聊天卡片剛好對齊輸入框 */
-  max-height: calc(100% - 0px); /* 填滿所有可用空間 */
-  
-  /* 當聊天區域展開時 */
-  &.expanded {
-    margin-bottom: 0; /* 移除間距 */
-    max-height: calc(100% - 0px);
-  }
+  max-height: calc(100% - 0px);
 }
 
 .chat-messages-container {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  padding-bottom: 100px; /* 增加底部 padding，為輸入框留空間 */
+  padding-bottom: 100px;
   max-height: 100%;
   
-  /* 自定義滾動條 */
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -343,7 +295,6 @@
     background: rgba(255, 255, 255, 0.5);
   }
   
-  /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
 }
@@ -352,6 +303,42 @@
   margin: 10px 0;
   display: flex;
   animation: fadeIn 0.3s ease-in;
+
+  &.left {
+    justify-content: flex-start;
+  }
+
+  &.right {
+    justify-content: flex-end;
+  }
+
+  pre {
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    margin: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.left pre {
+    background-color: #2a2a2a;
+    color: #cfcfcf;
+    border-bottom-left-radius: 4px;
+  }
+
+  &.right pre {
+    background-color: #393939;
+    color: #cfcfcf;
+    border-bottom-right-radius: 4px;
+  }
 }
 
 @keyframes fadeIn {
@@ -359,57 +346,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.chat-message.left {
-  justify-content: flex-start;
-}
-
-.chat-message.right {
-  justify-content: flex-end;
-}
-
-.chat-message pre {
-  background-color: #f1f1f1;
-  padding: 15px;
-  border-radius: 12px;
-  max-width: 80%;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  margin: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.chat-message pre:hover {
-  transform: translateY(-1px);
-}
-
-.chat-message.left pre {
-  background-color: #2a2a2a;
-  color: #cfcfcf;
-  border-bottom-left-radius: 4px;
-}
-
-.chat-message.right pre {
-  background-color: #393939;
-  color: #cfcfcf;
-  border-bottom-right-radius: 4px;
-}
-
-.msg-form-field {
-  width: 100%;
-  margin: 0;
-  display: block;
-}
-
-.msg-form-field .mat-mdc-form-field {
-  width: 100%;
-}
-
-.msg-form-field .mat-mdc-text-field-wrapper {
-  width: 100%;
-}
-
-/* 確保 mat-form-field 內部元素也是 100% 寬度 */
+/* Message input */
 .message-input-container {
   position: fixed;
   bottom: 0;
@@ -425,7 +362,6 @@
   border-radius: 12px 12px 0 0;
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
   
-  /* 確保內部表單元素填滿寬度 */
   .mat-mdc-form-field {
     width: 100%;
     display: block;
@@ -445,7 +381,7 @@
   }
 }
 
-/* 載入提示樣式 */
+/* Loading indicator */
 .floating-loading-indicator {
   position: fixed;
   bottom: 140px;
@@ -497,125 +433,155 @@
   }
 }
 
-/* 大螢幕優化 - 避開側邊選單 */
-@media (min-width: 1200px) {
-  .message-input-container {
-    left: calc(50% + 120px); /* 向右偏移避開側邊選單 */
-    width: calc(90% - 240px); /* 減少寬度以適應偏移 */
-    max-width: 600px; /* 調整最大寬度 */
-  }
-  
-  .floating-loading-indicator {
-    left: calc(50% + 120px); /* 載入提示也要對應調整 */
-  }
-  
-  .chat-layout {
-    height: calc(100vh - 350px);
-    
-    &.expanded {
-      height: calc(100vh - 180px);
-    }
-  }
-  
-  .chat-card {
-    margin-bottom: 0;
-    
-    &.expanded {
-      margin-bottom: 0;
-    }
+/* Message display */
+.message-wrapper {
+  width: 100%;
+  max-width: 80%;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &.user-message {
+    background-color: #393939;
   }
 }
 
-/* 更大螢幕的進一步優化 */
-@media (min-width: 1400px) {
-  .message-input-container {
-    left: calc(50% + 140px); /* 更大螢幕需要更多偏移 */
-    width: calc(90% - 280px);
-    max-width: 700px;
-  }
-  
-  .floating-loading-indicator {
-    left: calc(50% + 140px);
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 52px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
   }
 }
 
-/* 中等螢幕優化 */
-@media (min-width: 992px) and (max-width: 1199px) {
-  .message-input-container {
-    left: calc(50% + 100px); /* 中等螢幕較小的偏移 */
-    width: calc(90% - 200px);
-    max-width: 650px;
-  }
-  
-  .floating-loading-indicator {
-    left: calc(50% + 100px);
-  }
-  
-  .chat-layout {
-    height: calc(100vh - 320px);
-    
-    &.expanded {
-      height: calc(100vh - 160px);
-    }
+.message-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.role-badge, .node-badge, .tool-badge, .length-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.role-badge {
+  &.ai {
+    background-color: #2196F3;
+    color: white;
   }
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .ai-container {
-    width: 95%;
-    margin: 20px auto;
-    
-    &.compact {
-      margin-top: 5px;
-      margin-bottom: 5px;
-    }
-  }
+.node-badge {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.tool-badge {
+  background-color: #FF9800;
+  color: white;
+}
+
+.length-badge {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.collapse-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0;
   
-  /* 小螢幕恢復原本的置中 */
-  .message-input-container {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 95%;
-    max-width: none;
+  &.mat-mdc-icon-button {
+    --mdc-icon-button-state-layer-size: 32px;
+    --mat-mdc-button-persistent-ripple-color: transparent;
+    --mat-mdc-button-ripple-color: rgba(255, 255, 255, 0.1);
+    line-height: 1 !important;
   }
-  
-  .floating-loading-indicator {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 120px;
-    padding: 6px 12px;
-    
-    span {
-      font-size: 0.75em;
-    }
-    
-    .loading-spinner {
-      width: 14px;
-      height: 14px;
-    }
+
+  .mat-mdc-button-touch-target {
+    width: 32px !important;
+    height: 32px !important;
   }
-  
-  .chat-layout {
-    height: calc(100vh - 320px);
-    margin-top: 15px;
-    
-    &.expanded {
-      height: calc(100vh - 160px);
-      margin-top: 3px;
-    }
+
+  .mat-ripple {
+    border-radius: 50%;
   }
-  
-  .chat-card {
-    margin-bottom: 0;
-    
-    &.expanded {
-      margin-bottom: 0;
-    }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    margin: 0 !important;
   }
 }
 
-/* Tool calls section - 簡化樣式 */
+.message-content {
+  background: transparent;
+  
+  pre {
+    margin: 0;
+    padding: 16px;
+    background: transparent;
+    color: #cfcfcf;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.message-summary {
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  
+  pre {
+    margin: 0;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-style: inherit;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+/* Tool calls */
 .tool-calls-section {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.02);
@@ -690,7 +656,6 @@
   }
 }
 
-/* Tool details toggle */
 .tool-details-toggle {
   padding: 8px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -716,7 +681,6 @@
   }
 }
 
-/* Tool details content */
 .tool-call-details {
   margin: 0 16px 12px;
 }
@@ -750,163 +714,7 @@
   }
 }
 
-/* 簡化訊息包裝樣式 */
-.message-wrapper {
-  width: 100%;
-  max-width: 80%;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #2a2a2a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-
-  &.user-message {
-    background-color: #393939;
-  }
-}
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  min-height: 52px; /* 確保有固定高度 */
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-}
-
-.message-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  flex: 1; /* 讓左側內容佔用剩餘空間 */
-}
-
-.role-badge, .node-badge, .tool-badge, .length-badge {
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.7em;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.role-badge {
-  &.tool {
-    background-color: #FF9800;
-    color: white;
-  }
-  
-  &.ai {
-    background-color: #2196F3;
-    color: white;
-  }
-}
-
-.node-badge {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.tool-badge {
-  background-color: #FF9800;
-  color: white;
-}
-
-.length-badge {
-  background-color: #9C27B0;
-  color: white;
-}
-
-.collapse-btn {
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  min-height: 32px !important;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  margin: 0 !important;
-  padding: 0 !important;
-  flex-shrink: 0;
-  
-  /* 覆蓋 Material 按鈕的默認樣式 */
-  &.mat-mdc-icon-button {
-    --mdc-icon-button-state-layer-size: 32px;
-    --mat-mdc-button-persistent-ripple-color: transparent;
-    --mat-mdc-button-ripple-color: rgba(255, 255, 255, 0.1);
-    line-height: 1 !important;
-  }
-
-  /* 移除按鈕的默認 touch target */
-  .mat-mdc-button-touch-target {
-    width: 32px !important;
-    height: 32px !important;
-  }
-
-  .mat-ripple {
-    border-radius: 50%;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .mat-icon {
-    font-size: 18px !important;
-    width: 18px !important;
-    height: 18px !important;
-    line-height: 18px !important;
-    margin: 0 !important;
-  }
-}
-
-/* Message content */
-.message-content {
-  background: transparent;
-  
-  pre {
-    margin: 0;
-    padding: 16px;
-    background: transparent;
-    color: #cfcfcf;
-    border-radius: 0;
-    box-shadow: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-}
-
-.message-summary {
-  padding: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  font-style: italic;
-  
-  pre {
-    margin: 0;
-    background: transparent;
-    color: inherit;
-    font-family: inherit;
-    font-style: inherit;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-}
-
-/* Execution Path 樣式 - 簡潔內聯設計 */
+/* Execution path */
 .execution-path {
   margin: 0 16px 8px;
   padding: 0;
@@ -918,7 +726,7 @@
 .path-header {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 添加這行確保兩端對齊 */
+  justify-content: space-between;
   padding: 6px 0;
   background: transparent;
   border: none;
@@ -932,7 +740,7 @@
   .path-info {
     display: flex;
     align-items: center;
-    flex: 1; /* 讓左側內容佔用剩餘空間 */
+    flex: 1;
   }
 
   .path-icon {
@@ -1045,145 +853,7 @@
   display: inline-block;
 }
 
-/* Context Configuration 區域樣式 */
-.context-card {
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  
-  &.disabled {
-    opacity: 0.6;
-    pointer-events: none;
-  }
-  
-  .setup-icon {
-    color: #2196f3;
-  }
-  
-  mat-card-header {
-    margin-bottom: 16px;
-  }
-  
-  mat-card_content {
-    padding-top: 0;
-  }
-}
-
-/* 配置區段樣式 */
-.config-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-  
-  &:last-child {
-    margin-bottom: 16px;
-  }
-  
-  h4 {
-    margin: 0 0 8px 0;
-    font-size: 1.1em;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    
-    .optional {
-      font-size: 0.75em;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.5);
-      background: rgba(255, 255, 255, 0.1);
-      padding: 2px 6px;
-      border-radius: 8px;
-    }
-  }
-}
-
-/* Session 配置樣式 */
-.session-config {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  
-  .session-input {
-    flex: 1;
-  }
-  
-  .generate-btn {
-    height: 56px;
-    min-width: 110px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-  }
-  
-  /* 確保表單欄位和按鈕對齊 */
-  .mat-mdc-form-field {
-    margin-bottom: 0;
-  }
-}
-
-/* User Context 配置樣式 */
-.user-config {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .mat-mdc-form-field {
-    margin-bottom: 0;
-  }
-}
-
-/* Ready Status 樣式 */
-.ready-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: rgba(76, 175, 80, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  margin-top: 8px;
-  
-  .ready-icon {
-    color: #4caf50;
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
-  
-  span {
-    color: #4caf50;
-    font-weight: 500;
-    flex: 1;
-  }
-  
-  .start-chat-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-  }
-}
-
-/* Form Field 通用樣式 */
+/* Form fields */
 .full-width,
 .session-input,
 .user-config .mat-mdc-form-field {
@@ -1193,7 +863,6 @@
     margin-top: 4px;
   }
   
-  /* 自訂 outline 顏色 */
   .mat-mdc-form-field-outline {
     color: rgba(255, 255, 255, 0.3);
   }
@@ -1203,7 +872,6 @@
   }
 }
 
-/* 輸入欄位圖示樣式 */
 .mat-mdc-form-field-suffix .mat-icon {
   color: rgba(255, 255, 255, 0.5);
   font-size: 18px;
@@ -1211,7 +879,6 @@
   height: 18px;
 }
 
-/* 按鈕間距調整 */
 .generate-btn,
 .start-chat-btn {
   transition: all 0.2s ease;
@@ -1219,5 +886,103 @@
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Responsive design */
+@media (min-width: 1200px) {
+  .message-input-container {
+    left: calc(50% + 120px);
+    width: calc(90% - 240px);
+    max-width: 600px;
+  }
+  
+  .floating-loading-indicator {
+    left: calc(50% + 120px);
+  }
+  
+  .chat-layout {
+    height: calc(100vh - 350px);
+    
+    &.expanded {
+      height: calc(100vh - 180px);
+    }
+  }
+}
+
+@media (min-width: 1400px) {
+  .message-input-container {
+    left: calc(50% + 140px);
+    width: calc(90% - 280px);
+    max-width: 700px;
+  }
+  
+  .floating-loading-indicator {
+    left: calc(50% + 140px);
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .message-input-container {
+    left: calc(50% + 100px);
+    width: calc(90% - 200px);
+    max-width: 650px;
+  }
+  
+  .floating-loading-indicator {
+    left: calc(50% + 100px);
+  }
+  
+  .chat-layout {
+    height: calc(100vh - 320px);
+    
+    &.expanded {
+      height: calc(100vh - 160px);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-container {
+    width: 95%;
+    margin: 20px auto;
+    
+    &.compact {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+  }
+  
+  .message-input-container {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: none;
+  }
+  
+  .floating-loading-indicator {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 120px;
+    padding: 6px 12px;
+    
+    span {
+      font-size: 0.75em;
+    }
+    
+    .loading-spinner {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  .chat-layout {
+    height: calc(100vh - 320px);
+    margin-top: 15px;
+    
+    &.expanded {
+      height: calc(100vh - 160px);
+      margin-top: 3px;
+    }
   }
 }
